@@ -1,0 +1,33 @@
+use strict;
+use warnings;
+
+use inc::Module::Install;
+
+name 'OpenID-Lite';
+all_from 'lib/OpenID/Lite.pm';
+
+requires(
+    'Mouse'                    => '0.15',
+    'MouseX::Types'            => '0.01',
+    'XRI::Resolution::Lite'    => '0.02',
+    'HTML::TreeBuilder::XPath' => '0.09',
+    'LWPx::ParanoidAgent'      => '1.04',
+    'HTTP::Request'            => 0,
+    'Data::Util'               => '0.50',
+    'HTML::Entities'           => 0,
+    'HTML::TreeBuilder'        => 0,
+    'XML::LibXML'              => 0,
+
+    #    'Crypt::DH::GMP'           => '0.00005',
+);
+
+tests('t/*.t t/*/*.t');
+
+#author_tests('xt');
+test_requires(
+    'Test::More'  => 0,
+    'Test::Class' => 0,
+);
+
+auto_include;
+WriteAll;

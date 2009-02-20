@@ -1,0 +1,32 @@
+---
+abstract: 'Yet Another OpenID Consumer/Server support library'
+author:
+  - 'Lyo Kato, <lyo.kato@gmail.com>'
+build_requires:
+  Test::Class: 0
+  Test::More: 0
+distribution_type: module
+generated_by: 'Module::Install version 0.77'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: OpenID-Lite
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Data::Util: 0.50
+  HTML::Entities: 0
+  HTML::TreeBuilder: 0
+  HTML::TreeBuilder::XPath: 0.09
+  HTTP::Request: 0
+  LWPx::ParanoidAgent: 1.04
+  Mouse: 0.15
+  MouseX::Types: 0.01
+  XML::LibXML: 0
+  XRI::Resolution::Lite: 0.02
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

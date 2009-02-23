@@ -1,12 +1,13 @@
 package OpenID::Lite::RelyingParty::Associator::Base;
 
 use Mouse;
-extends 'OpenID::Lite::RelyingParty::DirectCommunication';
 with 'OpenID::Lite::Role::Associator';
+with 'OpenID::Lite::Role::AgentHandler';
+with 'OpenID::Lite::Role::ErrorHandler';
 
-use OpenID::Lite::Association;
-use OpenID::Lite::Constants::Namespace qw(SPEC_2_0);
-use OpenID::Lite::Constants::ModeType qw(ASSOCIATION);
+use OpenID::Lite::RelyingParty::Associator::ParamBuilder;
+use OpenID::Lite::RelyingParty::Associator::ParamExtractor;
+use OpenID::Lite::RelyingParty::DirectCommunication;
 
 has 'session_handler' => (
     is       => 'rw',
@@ -14,61 +15,50 @@ has 'session_handler' => (
     required => 1,
 );
 
+has '_direct_communication' => (
+    is         => 'ro',
+    lazy_build => 1,
+);
+
+has '_param_builder' => (
+    is         => 'ro',
+    lazy_build => 1,
+);
+
+has '_param_extractor' => (
+    is => 'ro',
+    lazy_build => 1,
+);
+
 sub associate {
     my ( $self, $service ) = @_;
-    my $req_params = $self->_build_params($service);
-    my $res_params = $self->send_request( $service->url, $req_params )
-        or return;
-    my $association = $self->_extract_response($res_params)
-        or return;
+    my $req_params = $self->_param_builder->build_params($service, $self->assoc_type);
+    my $res_params = $self->_direct_communication->send_request( $service->url, $req_params )
+        or return $self->ERROR( $self->_direct_communication->errstr );
+    my $association = $self->_param_extractor->extract_params($res_params)
+        or return $self->ERROR( $self->_param_extractor->errstr );
     return $association;
 }
 
-sub _build_params {
-    my ( $self, $service ) = @_;
-    my $params = OpenID::Lite::Params->new;
-    unless ( $service->requires_compatibility_mode ) {
-        $params->set( ns => SPEC_2_0 );
-    }
-    $params->set( mode       => ASSOCIATION );
-    $params->set( assoc_type => $self->assoc_type );
-    if (  !$service->requires_compatibility_mode
-        || $self->session_type ne NO_ENCRYPTION )
-    {
-        $params->set( session_type => $self->session_type );
-    }
-    $self->session_handler->set_request_params($params);
-}
-
-sub _extract_response {
-    my ( $self, $params ) = @_;
-
-    my $assoc_type   = $params->get('assoc_type');
-    my $assoc_handle = $params->get('assoc_handle');
-    my $session_type = $params->get('session_type');
-    my $expires_in   = $params->get('expires_in');
-
-    # check expiry
-
-    unless ( $self->session_handler->match($session_type) ) {
-
-        # openid1 && no-encryption -> handle as no-encryption
-        # another pattern -> protocol error
-    }
-
-    unless ( $self->session_handler->can_handle_assoc_type($assoc_type) ) {
-
-        # protocol error
-    }
-
-    my $secret      = $self->session_handler->extract_secret($params);
-    my $association = OpenID::Lite::Association->new(
-        type       => $assoc_type,
-        handle     => $assoc_handle,
-        expires_in => $expires_in,
-        secret     => $secret,
+sub _build__param_builder {
+    my $self = shift;
+    return OpenID::Lite::RelyingParty::Associator::ParamBuilder->new(
+        session_handler => $self->session_handler, 
     );
-    return $association;
+}
+
+sub _build__param_extractor {
+    my $self = shift;
+    return OpenID::Lite::RelyingParty::Associator::ParamExtractor->new(
+        session_handler => $self->session_handler, 
+    );
+}
+
+sub _build__direct_communication {
+    my $self = shift;
+    return OpenID::Lite::RelyingParty::DirectCommunication->new(
+        agent => $self->agent, 
+    );
 }
 
 no Mouse;

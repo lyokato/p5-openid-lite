@@ -17,7 +17,7 @@ has '_allowed_assoc_types' => (
 
 # template method
 sub set_request_params {
-    my ( $self, $params ) = @_;
+    my ( $self, $service, $params ) = @_;
 }
 
 sub match {
@@ -28,7 +28,7 @@ sub match {
 sub can_handle_assoc_type {
     my ( $self, $assoc_type ) = @_;
     my $allowed = $self->_allowed_assoc_types;
-    return ( any { $_ eq $assoc_type } @$allowed );
+    return ( $assoc_type && ( any { $_ eq $assoc_type } @$allowed ) );
 }
 
 # abstract method

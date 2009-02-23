@@ -12,6 +12,7 @@ use OpenID::Lite::RelyingParty::Store::Null;
 
 use Data::Util qw(:check);
 use URI;
+use Params::Validate qw(HASHREF);
 
 has '_discoverer' => (
     is         => 'ro',
@@ -56,7 +57,7 @@ sub begin {
 
     # TODO: cache service?
     # TODO: pick up proper one from discovered services
-    my $service = $services[0];
+    my $service = $services->[0];
 
     $self->begin_without_discovery( $service, $anonymous );
 }
@@ -68,7 +69,7 @@ sub begin_without_discovery {
     my $checkid_req = OpenID::Lite::RelyingParty::CheckIDRequest->new(
         service     => $service,
         association => $association,
-        anonymous   => ( $anonymouse ? 1 : 0 ),
+        anonymous   => ( $anonymous ? 1 : 0 ),
     );
     $self->last_requested_endpoint($service);
     return $checkid_req;

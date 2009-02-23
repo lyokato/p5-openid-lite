@@ -12,7 +12,7 @@ use OpenID::Lite::Constants::Namespace qw(
     SIGNON_1_0
 );
 
-override 'discover' => {
+override 'discover' => sub {
     my ( $self, $identifier ) = @_;
         my @services;
         for
@@ -21,8 +21,8 @@ override 'discover' => {
         my $services
             = super( $identifier, { service_type => $service_type } );
         next
-            unless $services;
-        push @services, $services;
+            unless ($services && @$services > 0);
+        push @services, @$services;
     }
     return $self->ERROR( sprintf q{No Service Found for %s},
         $identifier->as_string )

@@ -1,6 +1,7 @@
 package OpenID::Lite::RelyingParty::IDResHandler;
 
 use Mouse;
+with 'OpenID::Lite::Role::ErrorHandler';
 
 use Params::Validate qw(HASHREF);
 use OpenID::Lite::RelyingParty::IDResHandler::Result;
@@ -48,7 +49,7 @@ sub idres {
     }
 
     #return $self->ERROR();
-    return $self->_create_result_with_status(ERROR);
+    return $self->_create_result_with_status();
 }
 
 sub _create_verifier {
@@ -57,12 +58,12 @@ sub _create_verifier {
     if ( $args{params}->is_openid1 ) {
         $verifier
             = OpenID::Lite::RelyingParty::IDResHandler::Verifier::OpenID1
-            ->new(%$args);
+            ->new(%args);
     }
     elsif ( $args{params}->is_openid2 ) {
         $verifier
             = OpenID::Lite::RelyingParty::IDResHandler::Verifier::OpenID2
-            ->new(%$args);
+            ->new(%args);
     }
     return $verifier;
 }

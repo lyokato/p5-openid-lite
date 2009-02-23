@@ -158,7 +158,7 @@ sub _check_nonce {
     my $self = shift;
     my ( $nonce, $server_url );
     if ( $self->params->is_openid1 ) {
-        $nonce      = $self->params->get('rp_nonce'); # TODO: get extra params
+        $nonce      = $self->params->get_extra('rp_nonce'); # TODO: get extra params
         $server_url = '';
     }
     elsif ( $self->params->is_openid2 ) {

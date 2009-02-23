@@ -7,7 +7,7 @@ name 'OpenID-Lite';
 all_from 'lib/OpenID/Lite.pm';
 
 requires(
-    'Mouse'                    => '0.15',
+    'Mouse'                    => '0.17',
     'MouseX::Types'            => '0.01',
     'XRI::Resolution::Lite'    => '0.02',
     'HTML::TreeBuilder::XPath' => '0.09',
@@ -17,8 +17,8 @@ requires(
     'HTML::Entities'           => 0,
     'HTML::TreeBuilder'        => 0,
     'XML::LibXML'              => 0,
-
-    #    'Crypt::DH::GMP'           => '0.00005',
+    'String::Random'           => 0,
+    'Crypt::DH::GMP'           => '0.00005',
 );
 
 tests('t/*.t t/*/*.t');

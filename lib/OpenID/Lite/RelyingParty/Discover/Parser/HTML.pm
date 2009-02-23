@@ -53,7 +53,7 @@ sub _extract {
     my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
     $service->add_uri($op_endpoint_url);
     $service->add_type( $rel->{namespace} );
-    my $local_id =
+    my $local_id
         = $tree->findvalue( sprintf q{/html/head/link[@rel="%s"]/@href},
         $rel->{local_id_rel} );
     $service->op_local_identifier($local_id) if $local_id;

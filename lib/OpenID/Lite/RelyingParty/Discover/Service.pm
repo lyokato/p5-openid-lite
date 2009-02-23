@@ -3,7 +3,7 @@ package OpenID::Lite::RelyingParty::Discover::Service;
 use Mouse;
 use OpenID::Lite::Constants::Namespace
     qw(SERVER_2_0 SPEC_2_0 SPEC_1_0 SIGNON_2_0);
-use List::MoreUtils qw(any);
+use List::MoreUtils qw(any none);
 
 has 'uris' => (
     is      => 'rw',
@@ -56,7 +56,7 @@ sub is_op_endpoint {
 
 sub preferred_namespace {
     my $self = shift;
-    $self->requires_compatibility_mode ? SPEC_2_0 : SPEC_1_0;
+    $self->requires_compatibility_mode ? SPEC_1_0 : SPEC_2_0;
 }
 
 sub requires_compatibility_mode {
@@ -66,7 +66,7 @@ sub requires_compatibility_mode {
 }
 
 sub add_uri {
-    my ( $slef, $uri ) = @_;
+    my ( $self, $uri ) = @_;
     my $uris = $self->uris;
     push @$uris, $uri;
 }

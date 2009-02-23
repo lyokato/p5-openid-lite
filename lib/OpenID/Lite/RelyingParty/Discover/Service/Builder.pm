@@ -8,6 +8,7 @@ use OpenID::Lite::Constants::Namespace qw(
     SIGNON_2_0
     SIGNON_1_1
     SIGNON_1_0
+    SERVER_2_0
     XRD_2_0
     SPEC_1_0
 );
@@ -19,7 +20,7 @@ has 'claimed_identifier' => (
 );
 
 sub build_services {
-    my ( $slef, $xrd ) = @_;
+    my ( $self, $xrd ) = @_;
     my @service_nodes = $xrd->findnodes(q{*[local-name()='Service']});
     my @services;
     for my $service_elem (@service_nodes) {
@@ -43,11 +44,20 @@ sub build_service {
     my @types = map { $_->findvalue(q{text()}) } @type_nodes;
 
     return unless @uris > 0 && @types > 0;
-    # return unless ( any { $_ eq SERVER_2_0 || $_ eq SIGNON_2_0 || $_ eq SIGNON_1_1 || $_ eq SIGNON_1_0 } @types );
+    return
+        unless (
+        any {
+                   $_ eq SERVER_2_0
+                || $_ eq SIGNON_2_0
+                || $_ eq SIGNON_1_1
+                || $_ eq SIGNON_1_0;
+        }
+        @types
+        );
 
     my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
-    $service->add_uris( @uris );
-    $service->add_types( @types );
+    $service->add_uris(@uris);
+    $service->add_types(@types);
 
     unless ( $service->is_op_endpoint ) {
         $service->claimed_identifier( $self->claimed_identifier );
@@ -66,7 +76,7 @@ sub build_service {
         }
 
         $service->op_local_identifier($op_local_identifier)
-            unless $op_local_identifier;
+            if $op_local_identifier;
     }
     return $service;
 }

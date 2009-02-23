@@ -30,7 +30,7 @@ sub discover {
         $identifier );
 }
 
-sub _build_methods {
+sub _build__methods {
     my $self = shift;
     [   OpenID::Lite::RelyingParty::Discover::Method::Yadis->new(
             agent => $self->agent

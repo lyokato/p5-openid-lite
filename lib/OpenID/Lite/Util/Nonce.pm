@@ -13,7 +13,7 @@ use POSIX;
 use Time::Local;
 
 sub gen_nonce {
-    $time = POSIX::strftime(q{%FT%TZ}, gmtime());
+    my $time = POSIX::strftime(q{%FT%TZ}, gmtime());
     my $random = String::Random->new;
     my $salt = $random->randomregex('[a-zA-Z0-9]{6}');
     return $time.$salt;
@@ -21,7 +21,8 @@ sub gen_nonce {
 
 sub split_nonce {
     my $nonce = shift; 
-    my $timestamp = substr($nonce, 0, $pos)
+    my $pos = length(q{0000-00-00T00:00:00Z});
+    my $timestamp = substr($nonce, 0, $pos);
     return if length($timestamp) < $pos;
     return unless $timestamp =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
     my $time = timegm( POSIX::strptime( $timestamp, q{%FT%TZ} ) );

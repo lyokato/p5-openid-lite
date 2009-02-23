@@ -43,7 +43,7 @@ sub fetch {
 
         $result->content_type( lc $res->header('Content-Type') );
         $result->final_url( $res->base );
-        $result->conetent( $res->content );
+        $result->content( $res->content );
     }
     return $result;
 }

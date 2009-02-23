@@ -27,13 +27,13 @@ sub get_extra {
 
 sub get_keys {
     my $self = shift;
-    my @keys = keys @{ $self->{_params} };
+    my @keys = keys %{ $self->{_params} };
     return \@keys;
 }
 
 sub get_extra_keys {
     my $self = shift;
-    my @keys = keys @{ $self->{_extra_params} };
+    my @keys = keys %{ $self->{_extra_params} };
     return \@keys;
 }
 
@@ -72,7 +72,7 @@ sub from_request {
 
 sub to_key_value {
     my $self = shift;
-    $self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
+    #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     return join(
         "\n",
         map( sprintf( q{%s:%s}, $_, $self->{_params}{$_} ),
@@ -82,7 +82,7 @@ sub to_key_value {
 
 sub to_post_body {
     my $self = shift;
-    $self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
+    #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     return join(
         "&",
         map( sprintf( q{%s=%s},
@@ -94,14 +94,14 @@ sub to_post_body {
 
 sub to_url {
     my ( $self, $uri ) = @_;
-    $self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
+    #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     $uri = URI->new($uri) unless ref $uri eq 'URI';
     my %params = map { ( sprintf( q{openid.%s}, $_ ), $self->{_params}{$_} ) }
         keys %{ $self->{_params} };
     for my $key ( keys %{ $self->{_extra_params} } ) {
-        $params->{$key} = $self->{_extra_params}{$key};
+        $params{$key} = $self->{_extra_params}{$key};
     }
-    $uri->query_form( %{ $%params } );
+    $uri->query_form( %params );
     return $uri;
 }
 

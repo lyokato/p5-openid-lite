@@ -41,15 +41,18 @@ has '_dh' => (
 );
 
 override 'set_request_params' => sub {
-    my ( $self, $params ) = @_;
+    my ( $self, $service, $params ) = @_;
 
-    # num2bin needs Math::BigInt?
-    # unless ( $self->_use_default_dh ) {
-    #    $params->set( dh_modules => MIME::Base64::encode_base64(num2bin($self->dh_modulus)) );
-    #    $params->set( dh_gen     => MIME::Base64::encode_base64(num2bin($self->dh_gen)) );
-    # }
+# num2bin needs Math::BigInt?
+# unless ( $self->_use_default_dh ) {
+#    $params->set( dh_modules => MIME::Base64::encode_base64(num2bin($self->dh_modulus)) );
+#    $params->set( dh_gen     => MIME::Base64::encode_base64(num2bin($self->dh_gen)) );
+# }
     $params->set( dh_consumer_public =>
             MIME::Base64::encode_base64( $self->_dh->pub_key_twoc ) );
+    unless ( $service->requires_compatibility_mode ) {
+        $params->set( session_type => $self->_session_type );
+    }
     return $params;
 };
 

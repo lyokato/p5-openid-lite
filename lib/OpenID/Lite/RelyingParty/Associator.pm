@@ -5,16 +5,17 @@ with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
 with 'OpenID::Lite::Role::Associator';
 
-use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION);
+use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION DH_SHA1 DH_SHA256);
 
+use OpenID::Lite::RelyingParty::Associator::Base;
 use OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption;
 use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA1;
 use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA256;
 
 sub associate {
-    my ( $self, $op_endpoint_url ) = @_;
+    my ( $self, $service ) = @_;
     my $associator = $self->create_method_for( $self->session_type );
-    return $associator->associate($op_endpoint_url)
+    return $associator->associate($service)
         || $self->ERROR( $associator->errstr );
 }
 
@@ -67,7 +68,7 @@ OpenID::Lite::RelyingParty::Associator - associator
         assoc_type   => HMAC_SHA1,
         session_type => NO_ENCRYPTION,
     );
-    my $association = $associator->associate( $op_endpoint_url )
+    my $association = $associator->associate( $service )
         or die $associator->errstr;
 
 =head1 DESCRIPTION
@@ -84,7 +85,7 @@ Associate interface.
 See also L<OpenID::Lite::Role::Associator>.
 This returns L<OpenID::Lite::RelyingParty::Association> object.
 
-    my $association = $associator->associate( $op_endpoint_url );
+    my $association = $associator->associate( $service );
 
 =head2 create_method_for
 
@@ -98,7 +99,7 @@ See also L<OpenID::Lite::Role::Associator>.
 
 Returns error string after this object failed association.
 
-    my $association = $associator->associate( $op_endpoint_url )
+    my $association = $associator->associate( $service )
         or die $associator->errstr;
 
 =head1 AUTHOR

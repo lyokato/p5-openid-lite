@@ -27,7 +27,7 @@ sub fetch {
     my $content_type = $res->header('Content-Type');
     if ( $content_type && lc $content_type eq lc XRDS_CONTENT_TYPE ) {
         $result->content_type( lc $content_type );
-        $result->final_url( $res->base );
+        $result->final_url( $res->base->as_string );
         $result->content( $result->content );
     }
     else {
@@ -42,7 +42,7 @@ sub fetch {
             unless $res->is_success;
 
         $result->content_type( lc $res->header('Content-Type') );
-        $result->final_url( $res->base );
+        $result->final_url( $res->base->as_string );
         $result->content( $res->content );
     }
     return $result;

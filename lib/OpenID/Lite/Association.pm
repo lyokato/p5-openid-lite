@@ -23,14 +23,25 @@ has 'type' => (
 );
 
 has 'expires_in' => (
-    is       => 'rw',
-    isa      => 'Int',
+    is => 'rw',
+    isa => 'Int',
     required => 1,
 );
 
+has 'issued' => (
+    is => 'rw',
+    isa => 'Int',
+    required => 1,
+);
+
+sub expires_at {
+    my $self = shift;
+    return ( $self->issued + $self->expires_in );
+}
+
 sub is_expired {
     my $self = shift;
-    return ( $self->expires_in < time() );
+    return ( $self->expires_at < time() );
 }
 
 no Mouse;

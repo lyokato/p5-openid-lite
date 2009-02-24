@@ -20,7 +20,7 @@ our %EXPORT_TAGS = (
 );
 our @EXPORT_OK = map {@$_} values %EXPORT_TAGS;
 
-use constant ASSOCIATION          => 'association';
+use constant ASSOCIATION          => 'associate';
 use constant CHECKID_IMMEDIATE    => 'checkid_immediate';
 use constant CHECKID_SETUP        => 'checkid_setup';
 use constant ID_RES               => 'id_res';

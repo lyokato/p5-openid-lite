@@ -26,14 +26,17 @@ has '_param_builder' => (
 );
 
 has '_param_extractor' => (
-    is => 'ro',
+    is         => 'ro',
     lazy_build => 1,
 );
 
 sub associate {
     my ( $self, $service ) = @_;
-    my $req_params = $self->_param_builder->build_params($service, $self->assoc_type);
-    my $res_params = $self->_direct_communication->send_request( $service->url, $req_params )
+    my $req_params
+        = $self->_param_builder->build_params( $service, $self->assoc_type );
+    my $res_params
+        = $self->_direct_communication->send_request( $service->url,
+        $req_params )
         or return $self->ERROR( $self->_direct_communication->errstr );
     my $association = $self->_param_extractor->extract_params($res_params)
         or return $self->ERROR( $self->_param_extractor->errstr );
@@ -43,22 +46,19 @@ sub associate {
 sub _build__param_builder {
     my $self = shift;
     return OpenID::Lite::RelyingParty::Associator::ParamBuilder->new(
-        session_handler => $self->session_handler, 
-    );
+        session_handler => $self->session_handler, );
 }
 
 sub _build__param_extractor {
     my $self = shift;
     return OpenID::Lite::RelyingParty::Associator::ParamExtractor->new(
-        session_handler => $self->session_handler, 
-    );
+        session_handler => $self->session_handler, );
 }
 
 sub _build__direct_communication {
     my $self = shift;
     return OpenID::Lite::RelyingParty::DirectCommunication->new(
-        agent => $self->agent, 
-    );
+        agent => $self->agent, );
 }
 
 no Mouse;

@@ -59,7 +59,7 @@ sub build_service {
     $service->add_uris(@uris);
     $service->add_types(@types);
 
-    unless ( $service->is_op_endpoint ) {
+    unless ( $service->is_op_identifier ) {
         $service->claimed_identifier( $self->claimed_identifier );
         my $op_local_identifier;
         my $xpath_template

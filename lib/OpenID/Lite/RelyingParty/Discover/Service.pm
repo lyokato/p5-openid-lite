@@ -42,13 +42,18 @@ sub copy {
     return $copied;
 }
 
+sub find_local_identifier {
+    my $self = shift;
+    return $self->op_local_identifier || $self->claimed_identifier;
+}
+
 sub url {
     my $self = shift;
     my $uris = $self->uris;
     return $uris->[0];
 }
 
-sub is_op_endpoint {
+sub is_op_identifier {
     my $self  = shift;
     my $types = $self->types;
     return ( any { $_ eq SERVER_2_0 } @$types );

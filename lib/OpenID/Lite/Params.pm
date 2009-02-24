@@ -39,12 +39,13 @@ sub get_extra_keys {
 
 sub set {
     my ( $self, $key, $value ) = @_;
-    $self->{_params}{$key} = $value;
+    $self->{_params}{$key} = $value if ( defined $key && defined $value );
 }
 
 sub set_extra {
     my ( $self, $key, $value ) = @_;
-    $self->{_extra_params}{$key} = $value;
+    $self->{_extra_params}{$key} = $value
+        if ( defined $key && defined $value );
 }
 
 sub from_key_value {
@@ -63,7 +64,8 @@ sub from_request {
     for my $key (%$hash) {
         if ( $key =~ /^openid\.(.*)$/ ) {
             $params->set( $1, $hash->{$key} );
-        } else {
+        }
+        else {
             $params->set_extra( $key, $hash->{$key} );
         }
     }
@@ -72,6 +74,7 @@ sub from_request {
 
 sub to_key_value {
     my $self = shift;
+
     #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     return join(
         "\n",
@@ -82,6 +85,7 @@ sub to_key_value {
 
 sub to_post_body {
     my $self = shift;
+
     #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     return join(
         "&",
@@ -94,6 +98,7 @@ sub to_post_body {
 
 sub to_url {
     my ( $self, $uri ) = @_;
+
     #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     $uri = URI->new($uri) unless ref $uri eq 'URI';
     my %params = map { ( sprintf( q{openid.%s}, $_ ), $self->{_params}{$_} ) }
@@ -101,7 +106,7 @@ sub to_url {
     for my $key ( keys %{ $self->{_extra_params} } ) {
         $params{$key} = $self->{_extra_params}{$key};
     }
-    $uri->query_form( %params );
+    $uri->query_form(%params);
     return $uri;
 }
 
@@ -113,7 +118,7 @@ sub is_openid1 {
 
 sub is_openid2 {
     my $self = shift;
-    my $ns = $self->get('ns');
+    my $ns   = $self->get('ns');
     return ( $ns && $ns eq SPEC_2_0 );
 }
 

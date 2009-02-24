@@ -40,6 +40,12 @@ has '_dh' => (
     lazy_build => 1,
 );
 
+has '_secret_length' => (
+    is       => 'ro',
+    isa      => 'Int',
+    required => 1,
+);
+
 override 'set_request_params' => sub {
     my ( $self, $service, $params ) = @_;
 
@@ -48,8 +54,10 @@ override 'set_request_params' => sub {
 #    $params->set( dh_modules => MIME::Base64::encode_base64(num2bin($self->dh_modulus)) );
 #    $params->set( dh_gen     => MIME::Base64::encode_base64(num2bin($self->dh_gen)) );
 # }
-    $params->set( dh_consumer_public =>
-            MIME::Base64::encode_base64( $self->_dh->pub_key_twoc ) );
+    my $dh_consumer_public
+        = MIME::Base64::encode_base64( $self->_dh->pub_key_twoc );
+    $dh_consumer_public =~ s/\s+//g;
+    $params->set( dh_consumer_public => $dh_consumer_public );
     unless ( $service->requires_compatibility_mode ) {
         $params->set( session_type => $self->_session_type );
     }
@@ -58,11 +66,20 @@ override 'set_request_params' => sub {
 
 override 'extract_secret' => sub {
     my ( $self, $params ) = @_;
-    my $dh_server_public = $params->get('dh_server_public');
-    my $enc_mac_key      = $params->get('enc_mac_key');
-    my $dh_sec           = $self->_dh->compute_secret_twoc($dh_server_public);
+    my $dh_server_public = $params->get('dh_server_public')
+        or return $self->ERROR(q{Missing parameter, "dh_server_public".});
+    my $enc_mac_key = $params->get('enc_mac_key')
+        or return $self->ERROR(q{Missing parameter, "enc_mac_key".});
+    my $dh_sec = $self->_dh->compute_key_twoc($dh_server_public);
     my $secret
         = MIME::Base64::decode_base64($enc_mac_key) ^ $self->_hash($dh_sec);
+
+    my $secret_length = length $secret;
+    unless ( $secret_length == $self->_secret_length ) {
+        return $self->ERROR(
+            sprintf q{Secret length should be "%d", but got "%s"},
+            $self->_secret_length, $secret_length );
+    }
     return $secret;
 };
 

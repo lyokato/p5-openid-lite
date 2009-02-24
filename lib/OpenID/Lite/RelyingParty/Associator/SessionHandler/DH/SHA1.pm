@@ -19,6 +19,12 @@ has '+_allowed_assoc_types' => (
     default => sub { [HMAC_SHA1] },
 );
 
+has '+_secret_length' => (
+    is      => 'ro',
+    isa     => 'Int',
+    default => 20,
+);
+
 override '_hash' => sub {
     my ( $self, $dh_sec ) = @_;
     return Digest::SHA::sha1($dh_sec);

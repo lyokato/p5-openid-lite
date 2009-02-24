@@ -1,7 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::FetchResult;
 
 use Mouse;
-use MouseX::Types::URI qw(Uri);
 
 has 'xrds' => (
     is => 'rw',
@@ -24,7 +23,7 @@ has 'normalized_identifier' => (
 
 has 'final_url' => (
     is => 'rw',
-    isa => Uri,
+    isa => 'Str',
 );
 
 no Mouse;

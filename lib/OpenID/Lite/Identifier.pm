@@ -3,6 +3,8 @@ package OpenID::Lite::Identifier;
 use strict;
 use warnings;
 
+use overload q{""} => sub { shift->as_string }, fallback => 1;
+
 use URI;
 
 sub new {
@@ -16,7 +18,7 @@ sub new {
 sub normalize {
     my ( $class, $uri ) = @_;
     my $self = $class->new;
-    if ( $uri =~ /^xri:\/\/(.+)$/ ) {
+    if ( $uri =~ /^xri:\/\/([\=\@\+\$\!\)].+)$/ ) {
         $self->{is_xri} = 1;
         $self->{raw}    = $1;
     }
@@ -29,6 +31,7 @@ sub normalize {
         unless ( $uri =~ /^https?:\/\// ) {
             $uri = sprintf q{http://%s}, $uri;
         }
+
         # remove fragment
         $uri =~ s/\#.*$//;
 
@@ -36,9 +39,11 @@ sub normalize {
         # check if uri is correct.
         my $u = URI->new($uri)->canonical;
         my $path = $u->path || '/';
-        $self->{raw} = ($u->port == 80 || $u->port == 443)
-            ? sprintf(q{%s://%s%s}, $u->scheme, $u->host, $path)
-            : sprintf(q{%s://%s:%d%s}, $u->scheme, $u->host, $u->port, $path);
+        $self->{raw}
+            = ( $u->port == 80 || $u->port == 443 )
+            ? sprintf( q{%s://%s%s}, $u->scheme, $u->host, $path )
+            : sprintf( q{%s://%s:%d%s}, $u->scheme, $u->host, $u->port,
+            $path );
     }
     return $self;
 }

@@ -9,7 +9,7 @@ use HTTP::Request;
 sub send_request {
     my ( $self, $url, $params ) = @_;
     my $req = HTTP::Request->new( POST => $url );
-    $req->header( 'Content-Type' => q{application/x-form-urlencoded} );
+    $req->header( 'Content-Type' => q{application/x-www-form-urlencoded} );
     $req->content( $params->to_post_body );
     my $res = $self->agent->request($req);
     # TODO: SSL restriction

@@ -1,6 +1,7 @@
 package OpenID::Lite::RelyingParty::Associator::SessionHandler;
 
 use Mouse;
+with 'OpenID::Lite::Role::ErrorHandler';
 use List::MoreUtils qw(any);
 
 has '_session_type' => (

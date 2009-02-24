@@ -19,7 +19,7 @@ has 'service' => (
 
 has 'association' => (
     is        => 'ro',
-    isa       => 'OpenID::Lite::RelyingParty::Association',
+    isa       => 'OpenID::Lite::Association',
     predicate => 'has_association',
 );
 
@@ -77,8 +77,8 @@ sub gen_params {
         $identity = $claimed_id = IDENTIFIER_SELECT;
     }
     else {
-        $identity   = $self->service->op_local_identity;
-        $claimed_id = $self->service->claimed_identity;
+        $identity   = $self->service->find_local_identifier;
+        $claimed_id = $self->service->claimed_identifier;
     }
     $self->_set_param( identity => $identity );
     unless ( $self->service->requires_compatibility_mode ) {
@@ -99,7 +99,7 @@ sub should_send_redirect {
     return length($url) < 2048;
 }
 
-sub _build__parmas {
+sub _build__params {
     my $self   = shift;
     my $params = OpenID::Lite::Params->new;
     $params->set( ns => $self->service->preferred_namespace );

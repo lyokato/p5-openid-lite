@@ -15,7 +15,7 @@ sub fetch {
         unless $res->is_success;
 
     my $result = OpenID::Lite::RelyingParty::Discover::FetchResult->new;
-    $result->final_url( $res->base );
+    $result->final_url( $res->base->as_string );
     $result->normalized_identifier( $uri );
     $result->content_type( lc $res->header('Content-Type') );
     $result->content( $res->content );

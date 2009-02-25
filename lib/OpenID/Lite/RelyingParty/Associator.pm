@@ -15,7 +15,7 @@ use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA256;
 sub associate {
     my ( $self, $service ) = @_;
 
-    # TODO: cache control
+    # TODO: cache control -> should be moved to RelyingParty.pm?
     # my $server_url = $service->url;
     # my $association = $self->store->find_association_for( $server_url );
     # if ( !$association || $association->is_expired ) {

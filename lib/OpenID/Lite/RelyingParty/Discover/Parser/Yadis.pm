@@ -19,8 +19,9 @@ sub parse {
 
 sub create_parser_for {
     my ( $self, $result ) = @_;
+    my $xrds_regex = quotemeta XRDS_CONTENT_TYPE;
     my $parser
-        = ( $result->content_type eq lc XRDS_CONTENT_TYPE )
+        = ( $result->content_type =~/^$xrds_regex/i )
         ? OpenID::Lite::RelyingParty::Discover::Parser::XRDS->new
         : OpenID::Lite::RelyingParty::Discover::Parser::HTML->new;
 }

@@ -104,14 +104,20 @@ sub discover {
 }
 
 sub associate {
-    my $self = shift;
-    return $self->_associator->associate(@_)
-        || $self->ERROR( $self->_associator->errstr );
+    my ( $self, $service ) = @_;
+    my $server_url = $service->url;
+    my $association = $self->store->find_association_by_server_url($server_url);
+    if ( !$association || $association->is_expired ) {
+        $association = $self->_associator->associate($service)
+            or return $self->ERROR( $self->_associator->errstr );
+        $self->store->save_association($server_url => $association);
+    }
+    return $association;
 }
 
 sub complete {
     my ( $self, $current_url, $query_params ) = @_;
-    my $params      = OpenID::Lite::Params->from_hash($query_params);
+    my $params      = OpenID::Lite::Params->from_request($query_params);
     my $service     = $self->last_requested_endpoint;
     my $handle      = $params->get('assoc_handle');
     my $association = $self->find_association_by_handle($handle);

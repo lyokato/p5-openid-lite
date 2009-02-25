@@ -9,17 +9,31 @@ use OpenID::Lite::Constants::Namespace qw(SIGNON_1_0 SIGNON_1_1 SPEC_2_0);
 sub new {
     my ( $class, %params ) = @_;
     my $self = bless {
-        _params           => {},
-        _extension_params => {},
-        _extra_params     => {}
+        _params               => {},
+        _extension_params     => {},
+        _extra_params         => {},
+        _extension_namespaces => {},
     }, $class;
     return $self;
+}
+
+sub register_extension_namespace {
+    my ( $self, $ext_name, $ext_ns ) = @_;
+    $self->{_extension_namespaces}{$ext_name} = $ext_ns;
 }
 
 sub get {
     my ( $self, $key ) = @_;
     return exists $self->{_params}{$key}
         ? $self->{_params}{$key}
+        : undef;
+}
+
+sub get_extension {
+    my ( $self, $ext_name, $key ) = @_;
+    return (   exists $self->{_extension_params}{$ext_name}
+            && exists $self->{_extension_params}{$ext_name}{$key} )
+        ? $self->{_extension_params}{$ext_name}{$key}
         : undef;
 }
 
@@ -47,6 +61,11 @@ sub set {
         if ( defined $key && defined $value );
 }
 
+sub set_extension {
+    my ( $self, $ext_name, $key, $value ) = @_;
+    $self->{_ext_params}{$ext_name}{$key} = $value;
+}
+
 sub set_extra {
     my ( $self, $key, $value ) = @_;
     $self->{_extra_params}{$key} = $value
@@ -67,8 +86,19 @@ sub from_request {
     my ( $class, $hash ) = @_;
     my $params = $class->new;
     for my $key (%$hash) {
-        if ( $key =~ /^openid\.(.*)$/ ) {
+        if ( $key =~ /^openid\.(.+)$/ ) {
             $params->set( $1, $hash->{$key} );
+        }
+        elsif ( $key =~ /^openid\.(.+)\.(.+)$/ ) {
+            my $ext_name = $1;
+            my $ext_key  = $2;
+            if ( $ext_name eq 'ns' ) {
+                $params->register_extension_namespace( $ext_key,
+                    $hash->{$key} );
+            }
+            else {
+                $params->set_extension( $ext_name, $ext_key, $hash->{$key} );
+            }
         }
         else {
             $params->set_extra( $key, $hash->{$key} );
@@ -106,13 +136,31 @@ sub to_url {
 
     #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
     $uri = URI->new($uri) unless ref $uri eq 'URI';
+    $uri->query_form( %{ $self->to_hash } );
+    return $uri;
+}
+
+sub to_hash {
+    my $self = shift;
     my %params = map { ( sprintf( q{openid.%s}, $_ ), $self->{_params}{$_} ) }
         keys %{ $self->{_params} };
+    for my $ext_name ( keys %{ $self->{_extension_namespaces} } ) {
+        my $key = sprintf( q{openid.ns.%s}, $ext_name );
+        my $value = $self->{_extension_namespaces}{$ext_name};
+        $params{$key} = $value;
+    }
+    for my $ext_name ( keys %{ $self->{_extension_params} } ) {
+        my $ext_hash = $self->{_extension_params}{$ext_name};
+        for my $ext_key ( keys %$ext_hash ) {
+            my $key = sprintf( q{openid.%s.%s}, $ext_name, $ext_key );
+            my $value = $ext_hash->{$ext_key};
+            $params{$key} = $value;
+        }
+    }
     for my $key ( keys %{ $self->{_extra_params} } ) {
         $params{$key} = $self->{_extra_params}{$key};
     }
-    $uri->query_form(%params);
-    return $uri;
+    return \$params;
 }
 
 sub is_openid1 {

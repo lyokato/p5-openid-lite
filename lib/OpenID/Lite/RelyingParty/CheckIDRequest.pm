@@ -1,9 +1,11 @@
 package OpenID::Lite::RelyingParty::CheckIDRequest;
 
 use Mouse;
+use URI;
 use OpenID::Lite::Params;
 use OpenID::Lite::Constants::Namespace qw(SPEC_2_0 IDENTIFIER_SELECT);
 use OpenID::Lite::Constants::ModeType qw(CHECKID_SETUP CHECKID_IMMEDIATE);
+use OpenID::Lite::Util::Nonce qw(gen_nonce);
 
 has 'anonymous' => (
     is      => 'rw',
@@ -59,15 +61,14 @@ sub gen_params {
         : 'realm';
     $self->_set_param( $realm_key, $realm );
 
-    # check return_to
-    # version is 1 ?
     if ( exists $args{return_to} ) {
         my $return_to = URI->new( $args{return_to} );
-
-        #$return_to->query_form(
-        # nonce => gen_nonce(),
-        # claimed_id => $claimed_id,
-        #);
+        if ( $self->service->requires_compatibility_mode ) {
+            $return_to->query_form(
+                rp_nonce   => gen_nonce(),
+                claimed_id => $self->service->claimed_identifier,
+            );
+        }
         $self->_set_param( return_to => $return_to->as_string );
     }
 

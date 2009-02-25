@@ -33,8 +33,8 @@ my $service = OpenID::Lite::RelyingParty::Discover::Service->new(
 );
 my $assoc = OpenID::Lite::RelyingParty::Associator->new(
     assoc_type => HMAC_SHA1,
-    session_type => NO_ENCRYPTION,
-#    session_type => DH_SHA1,
+#    session_type => NO_ENCRYPTION,
+    session_type => DH_SHA1,
 );
 my $association = $assoc->associate($service)
     or die $assoc->errstr;

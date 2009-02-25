@@ -14,7 +14,6 @@ has 'dh_modulus' => (
     trigger => sub {
         my $self = shift;
         $self->_use_default_dh(0);
-        $self->_dh( $self->_build__dh() );
     },
 );
 
@@ -25,7 +24,6 @@ has 'dh_gen' => (
     trigger => sub {
         my $self = shift;
         $self->_use_default_dh(0);
-        $self->_dh( $self->_build__dh() );
     },
 );
 
@@ -33,11 +31,6 @@ has '_use_default_dh' => (
     is      => 'rw',
     isa     => 'Bool',
     default => 1,
-);
-
-has '_dh' => (
-    is         => 'rw',
-    lazy_build => 1,
 );
 
 has '_secret_length' => (
@@ -49,13 +42,14 @@ has '_secret_length' => (
 override 'set_request_params' => sub {
     my ( $self, $service, $params ) = @_;
 
+    my $dh = $self->_build__dh();
+
 # num2bin needs Math::BigInt?
 # unless ( $self->_use_default_dh ) {
 #    $params->set( dh_modules => MIME::Base64::encode_base64(num2bin($self->dh_modulus)) );
 #    $params->set( dh_gen     => MIME::Base64::encode_base64(num2bin($self->dh_gen)) );
 # }
-    my $dh_consumer_public
-        = MIME::Base64::encode_base64( $self->_dh->pub_key_twoc );
+    my $dh_consumer_public = MIME::Base64::encode_base64( $dh->pub_key_twoc );
     $dh_consumer_public =~ s/\s+//g;
     $params->set( dh_consumer_public => $dh_consumer_public );
     unless ( $service->requires_compatibility_mode ) {
@@ -70,7 +64,8 @@ override 'extract_secret' => sub {
         or return $self->ERROR(q{Missing parameter, "dh_server_public".});
     my $enc_mac_key = $params->get('enc_mac_key')
         or return $self->ERROR(q{Missing parameter, "enc_mac_key".});
-    my $dh_sec = $self->_dh->compute_key_twoc($dh_server_public);
+    my $dh     = $self->_build__dh();
+    my $dh_sec = $dh->compute_key_twoc($dh_server_public);
     my $secret
         = MIME::Base64::decode_base64($enc_mac_key) ^ $self->_hash($dh_sec);
 

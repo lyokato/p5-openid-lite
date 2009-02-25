@@ -8,7 +8,11 @@ use OpenID::Lite::Constants::Namespace qw(SIGNON_1_0 SIGNON_1_1 SPEC_2_0);
 
 sub new {
     my ( $class, %params ) = @_;
-    my $self = bless { _params => {}, _extra_params => {} }, $class;
+    my $self = bless {
+        _params           => {},
+        _extension_params => {},
+        _extra_params     => {}
+    }, $class;
     return $self;
 }
 
@@ -39,7 +43,8 @@ sub get_extra_keys {
 
 sub set {
     my ( $self, $key, $value ) = @_;
-    $self->{_params}{$key} = $value if ( defined $key && defined $value );
+    $self->{_params}{$key} = $value
+        if ( defined $key && defined $value );
 }
 
 sub set_extra {

@@ -28,7 +28,7 @@ sub fetch {
     if ( $content_type && lc $content_type eq lc XRDS_CONTENT_TYPE ) {
         $result->content_type( lc $content_type );
         $result->final_url( $res->base->as_string );
-        $result->content( $result->content );
+        $result->content( $res->content );
     }
     else {
 

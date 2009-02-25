@@ -14,8 +14,6 @@ sub send_request {
     $req->content( $params->to_post_body );
     my $res = $self->agent->request($req);
     # TODO: SSL restriction
-    use Data::Dump qw(dump);
-    warn dump($res);
     if ($res->is_success) {
         my $params = OpenID::Lite::Params->from_key_value($res->content);
         return $params;

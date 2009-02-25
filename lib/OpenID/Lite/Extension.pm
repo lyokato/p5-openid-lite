@@ -1,4 +1,4 @@
-package OpenID::Lite::RelyingParty::Extension;
+package OpenID::Lite::Extension;
 
 use Mouse;
 

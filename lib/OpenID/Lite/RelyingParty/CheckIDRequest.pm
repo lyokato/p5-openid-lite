@@ -36,6 +36,7 @@ has '_params' => (
 
 sub add_extension {
     my ( $self, $extension ) = @_;
+    $extension->append_params($self->_params);
 }
 
 sub redirect_url {

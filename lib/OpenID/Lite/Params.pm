@@ -63,7 +63,7 @@ sub set {
 
 sub set_extension {
     my ( $self, $ext_name, $key, $value ) = @_;
-    $self->{_ext_params}{$ext_name}{$key} = $value;
+    $self->{_extension_params}{$ext_name}{$key} = $value;
 }
 
 sub set_extra {
@@ -160,7 +160,7 @@ sub to_hash {
     for my $key ( keys %{ $self->{_extra_params} } ) {
         $params{$key} = $self->{_extra_params}{$key};
     }
-    return \$params;
+    return \%params;
 }
 
 sub is_openid1 {

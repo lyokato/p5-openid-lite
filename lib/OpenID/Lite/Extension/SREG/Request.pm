@@ -5,13 +5,15 @@ use List::MoreUtils qw(any none);
 use Carp ();
 
 has '_required' => (
-    is  => 'ro',
-    isa => 'ArrayRef',
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    default => sub { [] },
 );
 
 has '_optional' => (
-    is  => 'ro',
-    isa => 'ArrayRef',
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    default => sub { [] },
 );
 
 has 'policy_url' => (

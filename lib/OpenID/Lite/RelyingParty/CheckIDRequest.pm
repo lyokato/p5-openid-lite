@@ -36,7 +36,11 @@ has '_params' => (
 
 sub add_extension {
     my ( $self, $extension ) = @_;
+    # XXX: check service endpoint includes proper Type element for indicated
+    #      extension.
+    # if ( $self->service->accept_extension($extension) ) {
     $extension->append_params($self->_params);
+    # }
 }
 
 sub redirect_url {

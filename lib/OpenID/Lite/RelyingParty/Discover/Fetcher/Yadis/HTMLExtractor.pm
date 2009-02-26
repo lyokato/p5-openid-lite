@@ -11,13 +11,14 @@ sub extract {
     my $tree = HTML::TreeBuilder::XPath->new;
     $tree->parse(lc $content);
     my $location
-        = $tree->findvalue(
-        sprintf q{/html/head/meta[@http-equiv='%s']/@content},
-        lc XRDS_HEADER )
-        || $tree->findvalue(
-        sprintf q{/html/head/meta[@http-equiv='%s']/@content},
-        lc YADIS_HEADER );
+        =  $tree->findvalue( $self->_build_xpath_with( XRDS_HEADER  ) )
+        || $tree->findvalue( $self->_build_xpath_with( YADIS_HEADER ) );
     return URI::Escape::uri_unescape($location);
+}
+
+sub _build_xpath_with {
+    my ( $self, $header ) = @_;
+    return sprintf(q{/html/head/meta[@http-equiv='%s']/@content}, lc $header)
 }
 
 no Mouse;

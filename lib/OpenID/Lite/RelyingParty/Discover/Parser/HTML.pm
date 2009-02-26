@@ -46,18 +46,21 @@ sub parse {
 sub _extract {
     my ( $self, $tree, $rel ) = @_;
     my $op_endpoint_url
-        = $tree->findvalue( sprintf q{/html/head/link[@rel="%s"]/@href},
-        $rel->{endpoint_rel} )
+        = $tree->findvalue( $self->_build_xpath_with( $rel->{endpoint_rel} ) )
         or return;
 
     my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
     $service->add_uri($op_endpoint_url);
     $service->add_type( $rel->{namespace} );
     my $local_id
-        = $tree->findvalue( sprintf q{/html/head/link[@rel="%s"]/@href},
-        $rel->{local_id_rel} );
+        = $tree->findvalue( $self->_build_xpath_with( $rel->{local_id_rel} ) );
     $service->op_local_identifier($local_id) if $local_id;
     return $service;
+}
+
+sub _build_xpath_with {
+    my ( $self, $rel ) = @_;
+    return sprintf(q{/html/head/link[@rel="%s"][1]/@href}, $rel);
 }
 
 no Mouse;

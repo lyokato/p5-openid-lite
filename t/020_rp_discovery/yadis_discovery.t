@@ -23,7 +23,7 @@ run {
     if ( $block->claimed_identifier ) {
         is( $service->claimed_identifier, $block->claimed_identifier );
     } else {
-        ok( $service->is_op_endpoint );
+        ok( $service->is_op_identifier );
     }
     ok( !$service->requires_compatibility_mode );
     is( $service->preferred_namespace, $block->preferred_namespace );

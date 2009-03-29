@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Fetcher::HTML;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::AgentHandler';
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -23,7 +23,7 @@ sub fetch {
     return $result;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

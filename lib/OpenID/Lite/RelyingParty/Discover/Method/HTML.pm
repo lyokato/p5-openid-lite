@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Method::HTML;
 
-use Mouse;
+use Any::Moose;
 extends 'OpenID::Lite::RelyingParty::Discover::Method::Base';
 
 use OpenID::Lite::RelyingParty::Discover::Fetcher::HTML;
@@ -17,7 +17,7 @@ override '_build__parser' => sub {
     return OpenID::Lite::RelyingParty::Discover::Parser::HTML->new;
 };
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

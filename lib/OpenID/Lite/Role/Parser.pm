@@ -1,6 +1,6 @@
 package OpenID::Lite::Role::Parser;
 
-use Mouse::Role;
+use Any::Moose '::Role';
 
 requires 'parse';
 

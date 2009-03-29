@@ -1,6 +1,6 @@
 package OpenID::Lite::Role::ErrorHandler;
 
-use Mouse::Role;
+use Any::Moose '::Role';
 
 has '_errstr' => (
     is  => 'rw',

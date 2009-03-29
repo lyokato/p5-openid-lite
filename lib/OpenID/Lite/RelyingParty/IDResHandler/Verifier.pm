@@ -1,9 +1,9 @@
 package OpenID::Lite::RelyingParty::IDResHandler::Verifier;
-use Mouse;
+use Any::Moose;
 
 use URI;
 use List::MoreUtils qw(any);
-use MouseX::Types::URI qw(Uri);
+use Any::MooseX::Types::URI qw(Uri);
 use OpenID::Lite::Util::Nonce qw(split_nonce);
 
 has 'params' => (
@@ -201,7 +201,7 @@ sub create_signature_verifier {
     return $sig_verifier;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

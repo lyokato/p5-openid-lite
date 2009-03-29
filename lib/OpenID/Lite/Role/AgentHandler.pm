@@ -1,6 +1,6 @@
 package OpenID::Lite::Role::AgentHandler;
 
-use Mouse::Role;
+use Any::Moose '::Role';
 
 use LWP::UserAgent;
 

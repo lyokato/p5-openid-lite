@@ -1,14 +1,15 @@
 package OpenID::Lite::SignatureMethod::HMAC_SHA256;
-use Mouse;
+use Any::Moose;
 extends 'OpenID::Lite::SignatureMethod';
+use Digest::SHA ();
 # key length 256
 
 override '_hmac_hash' => sub {
-    my ( $self, $key ) = @_;
-    return Digest::SHA::hmac_sha256( $self->association->secret, $key );
+    my ( $self, $secret, $key ) = @_;
+    return Digest::SHA::hmac_sha256( $secret, $key );
 };
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

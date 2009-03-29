@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::FetchResult;
 
-use Mouse;
+use Any::Moose;
 
 has 'xrds' => (
     is => 'rw',
@@ -26,7 +26,7 @@ has 'final_url' => (
     isa => 'Str',
 );
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

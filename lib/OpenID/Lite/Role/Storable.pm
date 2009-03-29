@@ -1,10 +1,9 @@
 package OpenID::Lite::Role::Storable;
 
-use Mouse::Role;
+use Any::Moose '::Role';
 
 requires qw(set get);
 
-no Mouse::Role;
 1;
 
 

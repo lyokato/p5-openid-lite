@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty;
 
-use Mouse;
+use Any::Moose;
 
 use OpenID::Lite::Identifier;
 use OpenID::Lite::Params;
@@ -98,19 +98,27 @@ sub normalize_identifier {
 }
 
 sub discover {
-    my $self = shift;
-    return $self->_discoverer->discover(@_)
-        || $self->ERROR( $self->_discoverer->errstr );
+    my $self     = shift;
+    my $services = $self->_discoverer->discover(@_)
+        or return $self->ERROR( $self->_discoverer->errstr );
+
+    my @op_identifiers = grep { $_->is_op_identifier } @$services;
+    return \@op_identifiers if @op_identifiers > 0;
+
+    my @sorted_servieces
+        = sort { $a->type_priority <=> $b->type_priority } @$services;
+    return \@sorted_services;
 }
 
 sub associate {
     my ( $self, $service ) = @_;
     my $server_url = $service->url;
-    my $association = $self->store->find_association_by_server_url($server_url);
+    my $association
+        = $self->store->find_association_by_server_url($server_url);
     if ( !$association || $association->is_expired ) {
         $association = $self->_associator->associate($service)
             or return $self->ERROR( $self->_associator->errstr );
-        $self->store->save_association($server_url => $association);
+        $self->store->save_association( $server_url => $association );
     }
     return $association;
 }
@@ -120,7 +128,7 @@ sub complete {
     my $params      = OpenID::Lite::Params->from_request($query_params);
     my $service     = $self->last_requested_endpoint;
     my $handle      = $params->get('assoc_handle');
-    my $association = $self->find_association_by_handle($handle);
+    my $association = $self->store->find_association_by_handle($handle);
     my %args        = (
         current_url => $current_url,
         params      => $params,
@@ -129,12 +137,6 @@ sub complete {
     $args{association} = $association if $association;
     my $result = $self->idres(%args);
     return $result;
-}
-
-sub find_association_by_handle {
-    my ( $self, $handle ) = @_;
-    my $association = $self->store->get( 'openid.association.' . $handle );
-    return $association;
 }
 
 sub idres {
@@ -154,12 +156,13 @@ sub idres {
         }
     );
     $self->_id_res_handler->idres(%args)
-        || $self->ERROR( $self->_verifier->errstr );
+        || $self->ERROR( $self->_id_res_handler->errstr );
 }
 
 sub _build__discoverer {
     my $self = shift;
-    return OpenID::Lite::RelyingParty::Discover->new( agent => $self->agent );
+    return OpenID::Lite::RelyingParty::Discover->new( agent => $self->agent,
+    );
 }
 
 sub _build__associator {
@@ -177,7 +180,7 @@ sub _build__id_res_handler {
         agent => $self->agent, );
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

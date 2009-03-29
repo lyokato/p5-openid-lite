@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Associator::Base;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::Associator';
 with 'OpenID::Lite::Role::AgentHandler';
 with 'OpenID::Lite::Role::ErrorHandler';
@@ -9,9 +9,9 @@ use OpenID::Lite::RelyingParty::Associator::ParamBuilder;
 use OpenID::Lite::RelyingParty::Associator::ParamExtractor;
 use OpenID::Lite::RelyingParty::DirectCommunication;
 
-has 'session_handler' => (
+has 'session' => (
     is       => 'rw',
-    isa      => 'OpenID::Lite::RelyingParty::Associator::SessionHandler',
+    isa      => 'OpenID::Lite::SessionHandler',
     required => 1,
 );
 
@@ -46,13 +46,13 @@ sub associate {
 sub _build__param_builder {
     my $self = shift;
     return OpenID::Lite::RelyingParty::Associator::ParamBuilder->new(
-        session_handler => $self->session_handler, );
+        session => $self->session, );
 }
 
 sub _build__param_extractor {
     my $self = shift;
     return OpenID::Lite::RelyingParty::Associator::ParamExtractor->new(
-        session_handler => $self->session_handler, );
+        session => $self->session, );
 }
 
 sub _build__direct_communication {
@@ -61,7 +61,7 @@ sub _build__direct_communication {
         agent => $self->agent, );
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

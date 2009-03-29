@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Parser::HTML;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::Parser';
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -63,7 +63,7 @@ sub _build_xpath_with {
     return sprintf(q{/html/head/link[@rel="%s"][1]/@href}, $rel);
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

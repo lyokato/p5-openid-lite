@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Fetcher::Yadis::HTMLExtractor;
 
-use Mouse;
+use Any::Moose;
 use HTML::TreeBuilder::XPath;
 use URI::Escape ();
 use OpenID::Lite::Constants::Yadis qw(XRDS_HEADER YADIS_HEADER);
@@ -21,7 +21,7 @@ sub _build_xpath_with {
     return sprintf(q{/html/head/meta[@http-equiv='%s']/@content}, lc $header)
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::IDResHandler;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 
 use Params::Validate qw(HASHREF);
@@ -74,7 +74,7 @@ sub _create_result_with_status {
         status => $status, );
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

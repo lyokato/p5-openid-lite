@@ -1,11 +1,11 @@
 package OpenID::Lite::Extension;
 
-use Mouse;
+use Any::Moose;
 
 sub append_params {
     my ( $self, $params ) = @_;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;

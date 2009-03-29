@@ -1,18 +1,18 @@
 package OpenID::Lite::RelyingParty::Discover::Service;
 
-use Mouse;
+use Any::Moose;
 use OpenID::Lite::Constants::Namespace
-    qw(SERVER_2_0 SPEC_2_0 SPEC_1_0 SIGNON_2_0);
+    qw(SERVER_2_0 SPEC_2_0 SPEC_1_0 SIGNON_2_0 SIGNON_1_1 SIGNON_1_0);
 use List::MoreUtils qw(any none);
 
 has 'uris' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => 'ArrayRef',
     default => sub { [] },
 );
 
 has 'types' => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => 'ArrayRef',
     default => sub { [] },
 );
@@ -25,6 +25,14 @@ has 'claimed_identifier' => (
 has 'op_local_identifier' => (
     is  => 'rw',
     isa => 'Str',
+);
+
+my @PRIORITY_ORDER = ( SERVER_2_0, SIGNON_2_0, SIGNON_1_1, SIGNON_1_0 );
+
+has 'type_priority' => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => sub {$#PRIORITY_ORDER}
 );
 
 sub copy {
@@ -84,6 +92,13 @@ sub add_uris {
 sub add_type {
     my ( $self, $type ) = @_;
     my $types = $self->types;
+    for ( my $i = 0; $i < @PRIORITY_ORDER; $i++ ) {
+        if (   $type eq $PRIORITY_ORDER[$i]
+            && $self->type_priority > $i )
+        {
+            $self->type_priority($i);
+        }
+    }
     push @$types, $type;
 }
 
@@ -92,7 +107,7 @@ sub add_types {
     $self->add_type($_) for @_;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

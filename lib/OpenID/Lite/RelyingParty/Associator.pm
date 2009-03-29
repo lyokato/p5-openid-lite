@@ -1,16 +1,12 @@
 package OpenID::Lite::RelyingParty::Associator;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
 with 'OpenID::Lite::Role::Associator';
 
-use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION DH_SHA1 DH_SHA256);
-
+use OpenID::Lite::SessionHandlers;
 use OpenID::Lite::RelyingParty::Associator::Base;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA1;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA256;
 
 sub associate {
     my ( $self, $service ) = @_;
@@ -24,34 +20,17 @@ sub associate {
 # factory method
 sub create_method_for {
     my ( $self, $type ) = @_;
-    my $session_handler;
-    if ( $type eq NO_ENCRYPTION ) {
-        $session_handler
-            = OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption
-            ->new;
-    }
-    elsif ( $type eq DH_SHA1 ) {
-        $session_handler
-            = OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA1
-            ->new;
-    }
-    elsif ( $type eq DH_SHA256 ) {
-        $session_handler
-            = OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA256
-            ->new;
-    }
-    else {
-        die "invalid session type";
-    }
+    my $session = OpenID::Lite::SessionHandlers->select_session($type);
+    Carp::croak "invalid session type" unless $session;
     my $associator = OpenID::Lite::RelyingParty::Associator::Base->new(
-        agent           => $self->agent,
-        assoc_type      => $self->assoc_type,
-        session_handler => $session_handler,
+        agent      => $self->agent,
+        assoc_type => $self->assoc_type,
+        session    => $session,
     );
     return $associator;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

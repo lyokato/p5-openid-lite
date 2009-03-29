@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Store::Null;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::Storable';
 
 sub find_association_by_server_url {
@@ -25,6 +25,6 @@ sub set {
     return;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;

@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Store::Memcached;
 
-use Mouse;
+use Any::Moose;
 
 sub find_association_by_server_url {
     my ( $self, $server_url ) = @_;
@@ -24,7 +24,7 @@ sub set {
 }
 
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

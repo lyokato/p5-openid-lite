@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Service::Builder;
 
-use Mouse;
+use Any::Moose;
 
 use List::MoreUtils qw(any);
 use OpenID::Lite::RelyingParty::Discover::Service;
@@ -81,7 +81,7 @@ sub build_service {
     return $service;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

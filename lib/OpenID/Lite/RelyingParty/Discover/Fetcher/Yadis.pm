@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Fetcher::Yadis;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::AgentHandler';
 with 'OpenID::Lite::Role::ErrorHandler';
 

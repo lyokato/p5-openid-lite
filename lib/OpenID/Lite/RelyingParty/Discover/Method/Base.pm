@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Method::Base;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::Discoverer';
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
@@ -33,7 +33,7 @@ sub _build__parser {
     die "Abstract Method";
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

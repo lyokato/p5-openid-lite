@@ -1,6 +1,6 @@
 package OpenID::Lite::Role::Associator;;
 
-use Mouse::Role;
+use Any::Moose '::Role';
 
 use OpenID::Lite::Types qw(AssocType SessionType);
 use OpenID::Lite::Constants::AssocType qw(HMAC_SHA256);

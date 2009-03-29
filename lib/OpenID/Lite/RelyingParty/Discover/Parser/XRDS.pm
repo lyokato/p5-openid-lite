@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Parser::XRDS;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::Parser';
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -33,7 +33,7 @@ sub parse {
     return $services;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

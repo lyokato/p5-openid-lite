@@ -1,11 +1,11 @@
 package OpenID::Lite::RelyingParty::Associator::ParamBuilder;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 
-has 'session_handler' => (
+has 'session' => (
     is       => 'rw',
-    isa      => 'OpenID::Lite::RelyingParty::Associator::SessionHandler',
+    isa      => 'OpenID::Lite::SessionHandler',
     required => 1,
 );
 
@@ -21,11 +21,11 @@ sub build_params {
     }
     $params->set( mode       => ASSOCIATION );
     $params->set( assoc_type => $assoc_type );
-    $self->session_handler->set_request_params($service, $params);
+    $self->session->set_request_params( $service, $params );
     return $params;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

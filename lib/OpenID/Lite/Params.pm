@@ -2,6 +2,7 @@ package OpenID::Lite::Params;
 
 use URI;
 use URI::Escape ();
+use Storable ();
 use List::MoreUtils qw(any);
 
 use OpenID::Lite::Constants::Namespace qw(SIGNON_1_0 SIGNON_1_1 SPEC_2_0);
@@ -15,6 +16,13 @@ sub new {
         _extension_namespaces => {},
     }, $class;
     return $self;
+}
+
+sub copy {
+    my $self = shift;
+    my $class = ref $self;
+    my $copied = Storable::dclone($self);
+    return bless $copied, $class;
 }
 
 sub register_extension_namespace {

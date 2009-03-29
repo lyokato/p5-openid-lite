@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Fetcher::XRI;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
 
@@ -37,7 +37,7 @@ sub fetch {
     return $result;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::Discoverer';
 with 'OpenID::Lite::Role::AgentHandler';
@@ -27,7 +27,7 @@ sub create_method_for {
     return $disco;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

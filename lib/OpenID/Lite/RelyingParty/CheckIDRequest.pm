@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::CheckIDRequest;
 
-use Mouse;
+use Any::Moose;
 use URI;
 use OpenID::Lite::Params;
 use OpenID::Lite::Constants::Namespace qw(SPEC_2_0 IDENTIFIER_SELECT);
@@ -38,7 +38,7 @@ sub add_extension {
     my ( $self, $extension ) = @_;
     # XXX: check service endpoint includes proper Type element for indicated
     #      extension.
-    # if ( $self->service->accept_extension($extension) ) {
+    # if ( $self->service->can_handle_extension($extension) ) {
     $extension->append_params($self->_params);
     # }
 }
@@ -112,7 +112,7 @@ sub _build__params {
     return $params;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

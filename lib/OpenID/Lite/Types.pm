@@ -1,7 +1,8 @@
 package OpenID::Lite::Types;
 use strict;
 
-use MouseX::Types -declare => [
+use Any::Moose;
+use Any::Moose 'X::Types' => [ -declare => [
     qw(
         AssocHandle
         AssocType
@@ -9,7 +10,7 @@ use MouseX::Types -declare => [
         AuthRequestMode
         AuthResponseMode
         )
-];
+] ];
 
 use OpenID::Lite::Constants::AssocType qw(HMAC_SHA1 HMAC_SHA256);
 use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION DH_SHA1 DH_SHA256);

@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Parser::XRI;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::Parser';
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -58,7 +58,7 @@ sub _get_canonical_id {
     return $canonical_id;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

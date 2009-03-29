@@ -1,5 +1,5 @@
 package OpenID::Lite::RelyingParty::Discover::Method::Yadis;
-use Mouse;
+use Any::Moose;
 extends 'OpenID::Lite::RelyingParty::Discover::Method::Base';
 
 use OpenID::Lite::RelyingParty::Discover::Fetcher::Yadis;
@@ -16,7 +16,7 @@ override '_build__parser' => sub {
     return OpenID::Lite::RelyingParty::Discover::Parser::Yadis->new;
 };
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

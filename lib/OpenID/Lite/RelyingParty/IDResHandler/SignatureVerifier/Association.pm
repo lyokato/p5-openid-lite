@@ -1,21 +1,20 @@
 package OpenID::Lite::RelyingParty::IDResHandler::SignatureVerifier::Association;
 
-use Mouse;
+use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 
-use OpenID::Lite::SignatureMethod::Factory;
+use OpenID::Lite::SignatureMethods;
 
 sub verify {
     my ( $self, $params ) = @_;
     my $sig = $params->get('sig');
-    return $self->ERROR() unless $sig;
+    return $self->ERROR(q{}) unless $sig;
 
-    my $factory = OpenID::Lite::SignatureMethod::Factory->new;
-    my $method = $factory->create_signature_method( $self->association );
-    $sig eq $method->sign($params);
+    my $method = OpenID::Lite::SignatureMethods->select_method( $self->association->type );
+    return $method->verify( $self->association->secret, $params, $sig );
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 

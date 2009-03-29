@@ -1,6 +1,6 @@
 package OpenID::Lite::Extension::SREG::Request;
 
-use Mouse;
+use Any::Moose;
 use List::MoreUtils qw(any none);
 use Carp ();
 
@@ -80,6 +80,6 @@ sub request_field {
     }
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;

@@ -1,6 +1,6 @@
 package OpenID::Lite::RelyingParty::Discover::Method::URL;
 
-use Mouse;
+use Any::Moose;
 
 use OpenID::Lite::RelyingParty::Discover::Method::Yadis;
 use OpenID::Lite::RelyingParty::Discover::Method::HTML;
@@ -41,6 +41,6 @@ sub _build__methods {
     ];
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;

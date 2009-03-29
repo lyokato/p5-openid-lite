@@ -1,13 +1,13 @@
 package OpenID::Lite::RelyingParty::Associator::ParamExtractor;
 
-use Mouse;
+use Any::Moose;
 use OpenID::Lite::Association;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption;
+use OpenID::Lite::SessionHandler::NoEncryption;
 use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION);
 
-has 'session_handler' => (
+has 'session' => (
     is       => 'rw',
-    isa      => 'OpenID::Lite::RelyingParty::Associator::SessionHandler',
+    isa      => 'OpenID::Lite::SessionHandler',
     required => 1,
 );
 
@@ -36,16 +36,15 @@ sub extract_params {
         }
     }
 
-    unless ( $self->session_handler->match($session_type) ) {
+    unless ( $self->session->match($session_type) ) {
 
         # found session mismatch
 
         if ( $params->is_openid1 && $session_type eq NO_ENCRYPTION ) {
 
             my $no_encryption_handler
-                = OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption
-                ->new;
-            $self->session_handler($no_encryption_handler);
+                = OpenID::Lite::SessionHandler::NoEncryption->new;
+            $self->session($no_encryption_handler);
 
         }
         else {
@@ -59,15 +58,16 @@ sub extract_params {
 
     my $assoc_type = $params->get('assoc_type')
         or return $self->ERROR(q{Missing paramter, "assoc_type".});
-    unless ( $self->session_handler->can_handle_assoc_type($assoc_type) ) {
+    unless ( $self->session->can_handle_assoc_type($assoc_type) ) {
+
         # protocol error
         return $self->ERROR(
             sprintf q{Server responds with unsupported assoc_type, "%s" },
             $assoc_type );
     }
 
-    my $secret = $self->session_handler->extract_secret($params)
-        or return $self->ERROR( $self->session_handler->errstr );
+    my $secret = $self->session->extract_secret($params)
+        or return $self->ERROR( $self->session->errstr );
 
     my $association = OpenID::Lite::Association->new(
         type       => $assoc_type,
@@ -79,6 +79,6 @@ sub extract_params {
     return $association;
 }
 
-no Mouse;
+no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;

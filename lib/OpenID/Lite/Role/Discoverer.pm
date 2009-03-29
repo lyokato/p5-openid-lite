@@ -1,6 +1,6 @@
 package OpenID::Lite::Role::Discoverer;
 
-use Mouse::Role;
+use Any::Moose '::Role';
 
 requires 'discover';
 

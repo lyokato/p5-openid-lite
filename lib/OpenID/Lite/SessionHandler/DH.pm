@@ -30,7 +30,7 @@ override 'set_request_params' => sub {
 
     my $dh = $self->_build__dh();
 
-# num2bin needs Math::BigInt?
+# XXX: num2bin needs Math::BigInt?
 # unless ( $self->_use_default_dh ) {
 #    $params->set( dh_modules => MIME::Base64::encode_base64(num2bin($self->dh_modulus)) );
 #    $params->set( dh_gen     => MIME::Base64::encode_base64(num2bin($self->dh_gen)) );
@@ -38,9 +38,9 @@ override 'set_request_params' => sub {
     my $dh_consumer_public = MIME::Base64::encode_base64( $dh->pub_key_twoc );
     $dh_consumer_public =~ s/\s+//g;
     $params->set( dh_consumer_public => $dh_consumer_public );
-    unless ( $service->requires_compatibility_mode ) {
+#    unless ( $service->requires_compatibility_mode ) {
         $params->set( session_type => $self->_session_type );
-    }
+#    }
     return $params;
 };
 
@@ -58,7 +58,7 @@ override 'extract_secret' => sub {
     my $secret_length = length $secret;
     unless ( $secret_length == $self->_secret_length ) {
         return $self->ERROR(
-            sprintf q{Secret length should be "%d", but got "%s"},
+            sprintf q{Secret length should be "%d", but got "%d"},
             $self->_secret_length, $secret_length );
     }
     return $secret;

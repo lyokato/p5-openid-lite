@@ -12,7 +12,7 @@ has '_session_type' => (
 
 has '_allowed_assoc_types' => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => 'ArrayRef[Str]',
     default => sub { [] },
 );
 

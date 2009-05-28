@@ -1,26 +1,12 @@
 package OpenID::Lite::Provider::Handler::Association;
 
 use Any::Moose;
-
-use OpenID::Lite::Types qw(AssocType);
-use OpenID::Lite::Constants::AssocType qw(HMAC_SHA1);
-use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION);
-use OpenID::Lite::Util::Association qw(gen_handle gen_secret);
-use OpenID::Lite::Association qw(gen_handle gen_secret);
 use OpenID::Lite::Params;
-use OpenID::Lite::Provider::Response::Direct;
-
-has 'assoc_type' => (
-    is      => 'ro',
-    isa     => AssocType,
-    default => HMAC_SHA1,
-);
-
-has 'session' => (
-    is       => 'ro',
-    isa      => 'OpenID::Lite::SessionHandler',
-    required => 1,
-);
+use OpenID::Lite::Constants::SessionType qw(:all);
+use OpenID::Lite::Constants::AssocType qw(:all);
+use OpenID::Lite::Association;
+use OpenID::Lite::SessionHandlers;
+with 'OpenID::Lite::Role::ErrorHandler';
 
 has 'secret_lifetime' => (
     is      => 'rw',
@@ -34,11 +20,34 @@ has 'store' => (
     #default => sub { OpenID::Lite::Provider::Store::Null->new },
 );
 
+
 sub handle_request {
     my ( $self, $req_params ) = @_;
 
-    # check session_type and assoc_type combination
-    unless ( $self->session->can_handle_assoc_type( $self->assoc_type ) ) {
+    # check session type
+    my $session_type = $req_params->get('session_type');
+    if ( $req_params->is_openid1 ) {
+        $session_type = NO_ENCRYPTION unless $session_type;
+    }
+    elsif ( $req_params->is_openid2 ) {
+        return $self->ERROR(q{Missing parameter, "session_type".})
+            unless $session_type;
+    }
+    else {
+        return $self->ERROR(q{Missing or invalid parameter, "ns"});
+    }
+
+    # prepare session handler
+    my $session = OpenID::Lite::SessionHandlers->select_session($session_type)
+        or return $self->ERROR( sprintf q{Invalid session type, "%s"},
+        $session_type || '' );
+
+    # check assoc_type
+    my $assoc_type = $req_params->get('assoc_type') || '';
+    unless ($assoc_type && $req_params->is_openid1) {
+        $assoc_type = HMAC_SHA1;
+    }
+    unless ( $session->can_handle_assoc_type($assoc_type) ) {
         if ( $req_params->is_openid1 ) {
             return $self->ERROR(
                 q{Invalid assoc_type and session_type combination.});
@@ -55,32 +64,21 @@ sub handle_request {
         return $unsupported;
     }
 
-    my $handle = gen_handle( $self->assoc_type );
-    my $secret = gen_secret( $self->assoc_type );
-
-    my $association = OpenID::Lite::Association->new(
-        secret     => $secret,
-        handle     => $handle,
-        type       => $self->assoc_type,
-        expires_in => $self->secret_lifetime,
-        issued     => time(),
-    );
+    # build association
+    my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
 
     my $res_params = OpenID::Lite::Params->new;
     $res_params->set( ns           => $req_params->ns );
-    $res_params->set( expires_in   => $association->expires_in );
-    $res_params->set( assoc_handle => $association->handle );
-    $res_params->set( assoc_type   => $association->type );
+    $res_params->set( expires_in   => $assoc->expires_in );
+    $res_params->set( assoc_handle => $assoc->handle );
+    $res_params->set( assoc_type   => $assoc->type );
 
-    $self->session->set_response_params( $req_params, $res_params,
-        $association );
+    $session->set_response_params( $req_params, $res_params,
+        $assoc );
 
-    #$self->store->save_association($key, $association);
+    $self->store->save_association($assoc);
 
-    my $res = OpenID::Lite::Provider::Response::Direct->new(
-        params => $res_params, 
-    );
-    return $res;
+    return $res_params;
 }
 
 no Any::Moose;

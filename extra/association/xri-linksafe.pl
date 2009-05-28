@@ -9,10 +9,6 @@ use OpenID::Lite::RelyingParty::Discover::Service;
 use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::Identifier;
 use OpenID::Lite::RelyingParty::Associator;
-use OpenID::Lite::RelyingParty::Associator::ParamBuilder;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA1;
-use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::Constants::AssocType qw(:all);
 use OpenID::Lite::Constants::SessionType qw(:all);
 use OpenID::Lite::RelyingParty::CheckIDRequest;
@@ -20,6 +16,7 @@ use OpenID::Lite::RelyingParty::CheckIDRequest;
 use Data::Dump qw(dump);
 use Perl6::Say;
 use MIME::Base64;
+use LWP::UserAgent;
 
 my $service = OpenID::Lite::RelyingParty::Discover::Service->new(
     claimed_identifier => "=!9978.5647.C6FA.BD12",
@@ -33,7 +30,7 @@ my $service = OpenID::Lite::RelyingParty::Discover::Service->new(
 my $assoc = OpenID::Lite::RelyingParty::Associator->new(
     assoc_type   => HMAC_SHA1,
     session_type => NO_ENCRYPTION,
-
+    agent => LWP::UserAgent->new,
     #    session_type => DH_SHA1,
 );
 my $association = $assoc->associate($service)

@@ -23,7 +23,7 @@ has '+_allowed_assoc_types' => (
 has '+_secret_length' => (
     is      => 'ro',
     isa     => 'Int',
-    default => 32,
+    default => 20,
 );
 
 override '_hash' => sub {

@@ -31,7 +31,7 @@ no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 
-=head1 NAME 
+=head1 NAME
 
 OpenID::Lite::RelyingParty::Discover - Facade class for discovery.
 

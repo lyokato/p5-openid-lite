@@ -9,11 +9,6 @@ use OpenID::Lite::RelyingParty::Discover::FetchResult;
 use OpenID::Lite::Constants::Yadis
     qw(XRDS_HEADER YADIS_HEADER XRDS_CONTENT_TYPE);
 
-has '_html_extractor' => (
-    is         => 'ro',
-    lazy_build => 1,
-);
-
 sub fetch {
     my ( $self, $uri ) = @_;
 
@@ -25,7 +20,8 @@ sub fetch {
     $result->normalized_identifier($uri);
 
     my $content_type = $res->header('Content-Type');
-    if ( $content_type && lc $content_type eq lc XRDS_CONTENT_TYPE ) {
+    my $xrds_type = quotemeta XRDS_CONTENT_TYPE;
+    if ( $content_type && $content_type =~ /^$xrds_type/i ) {
         $result->content_type( lc $content_type );
         $result->final_url( $res->base->as_string );
         $result->content( $res->content );
@@ -62,12 +58,8 @@ sub _extract_location_from_header {
 
 sub _extract_location_from_html {
     my ( $self, $content ) = @_;
-    return $self->_html_extractor->extract($content);
-}
-
-sub _build__html_extractor {
-    my $self = shift;
-    OpenID::Lite::RelyingParty::Discover::Fetcher::Yadis::HTMLExtractor->new;
+    return
+        OpenID::Lite::RelyingParty::Discover::Fetcher::Yadis::HTMLExtractor->extract($content);
 }
 
 1;

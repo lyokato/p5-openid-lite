@@ -35,11 +35,20 @@ sub build_service {
     my ( $self, $service_elem ) = @_;
 
     my @uri_nodes = $service_elem->findnodes(q{*[local-name()='URI']});
-    my @uris = map { $_->findvalue(q{text()}) }
-        sort {
-        ( $a->findvalue(q{@priority}) || 100 )
-            <=> ( $b->findvalue(q{@priority}) || 100 )
+
+    # Schwartzian transform
+    my @uris = map { $_->[0] }
+        sort { $a->[1] <=> $b->[1] }
+        map {
+        [ $_->findvalue(q{text()}), $_->findvalue(q{@priority}) || 100 ]
         } @uri_nodes;
+
+    #my @uris = map { $_->findvalue(q{text()}) }
+    #    sort {
+    #    ( $a->findvalue(q{@priority}) || 100 )
+    #        <=> ( $b->findvalue(q{@priority}) || 100 )
+    #    } @uri_nodes;
+
     my @type_nodes = $service_elem->findnodes(q{*[local-name()='Type']});
     my @types = map { $_->findvalue(q{text()}) } @type_nodes;
 

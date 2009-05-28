@@ -1,5 +1,4 @@
 package OpenID::Lite::Types;
-use strict;
 
 use Any::Moose;
 use Any::Moose 'X::Types' => [ -declare => [

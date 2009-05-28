@@ -10,8 +10,6 @@ use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::Identifier;
 use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::RelyingParty::Associator::ParamBuilder;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA1;
 use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::Constants::AssocType qw(:all);
 use OpenID::Lite::Constants::SessionType qw(:all);

@@ -19,7 +19,9 @@ sub sign {
 
 sub verify {
     my ( $self, $secret, $params, $sig ) = @_;
-    return ( $sig eq $self->sign($secret, $params) );
+    my $signed = $self->sign($secret, $params);
+    return unless $signed;
+    return $sig eq $signed;
 }
 
 sub _hmac_hash {
@@ -30,3 +32,4 @@ sub _hmac_hash {
 no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
+

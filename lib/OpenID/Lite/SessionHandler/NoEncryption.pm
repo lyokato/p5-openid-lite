@@ -20,13 +20,21 @@ has '+_allowed_assoc_types' => (
     default => sub { [ HMAC_SHA1, HMAC_SHA256 ] },
 );
 
+override 'set_request_params' => sub {
+    my ( $self, $service, $params ) = @_;
+    unless ( $service->requires_compatibility_mode ) {
+        $params->set( session_type => $self->_session_type );
+    }
+    return $params;
+};
+
 override 'set_response_params' => sub {
     my ( $self, $req_params, $res_params, $association ) = @_;
     my $secret = MIME::Base64::encode_base64( $association->secret );
     $secret =~ s/\s+//g;
     $res_params->set( mac_key => $secret );
 
-    unless ($res_params->is_openid1) {
+    unless ( $res_params->is_openid1 ) {
         $res_params->set( session_type => $self->_session_type );
     }
 };

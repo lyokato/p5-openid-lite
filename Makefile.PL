@@ -19,6 +19,7 @@ requires(
     'XML::LibXML'              => 0,
     'String::Random'           => 0,
     'Crypt::DH::GMP'           => '0.00005',
+    'Crypt::SSLeay' => 0,
 );
 
 tests('t/*.t t/*/*.t');

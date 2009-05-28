@@ -174,7 +174,7 @@ sub to_hash {
 sub is_openid1 {
     my $self = shift;
     my $ns   = $self->get('ns');
-    return ( $ns && any { $ns eq $_ } ( SIGNON_1_1, SIGNON_1_0 ) );
+    return ( !$ns || any { $ns eq $_ } ( SIGNON_1_1, SIGNON_1_0 ) );
 }
 
 sub is_openid2 {

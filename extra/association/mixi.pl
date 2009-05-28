@@ -10,13 +10,11 @@ use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::Identifier;
 use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::RelyingParty::Associator::ParamBuilder;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::NoEncryption;
-use OpenID::Lite::RelyingParty::Associator::SessionHandler::DH::SHA1;
-use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::Constants::AssocType qw(:all);
 use OpenID::Lite::Constants::SessionType qw(:all);
 use OpenID::Lite::RelyingParty::CheckIDRequest;
 use OpenID::Lite::Extension::SREG::Request;
+use OpenID::Lite::Agent::Dump;
 
 use Data::Dump qw(dump);
 use Perl6::Say;
@@ -33,8 +31,9 @@ my $service = OpenID::Lite::RelyingParty::Discover::Service->new(
 );
 my $assoc = OpenID::Lite::RelyingParty::Associator->new(
     assoc_type => HMAC_SHA1,
-    session_type => NO_ENCRYPTION,
-#    session_type => DH_SHA1,
+    #session_type => NO_ENCRYPTION,
+    session_type => DH_SHA1,
+    agent => OpenID::Lite::Agent::Dump->new,
 );
 my $association = $assoc->associate($service)
     or die $assoc->errstr;

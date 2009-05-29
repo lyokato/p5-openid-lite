@@ -3,13 +3,10 @@ abstract: 'Yet Another OpenID Consumer/Server support library'
 author:
   - 'Lyo Kato, <lyo.kato@gmail.com>'
 build_requires:
-  ExtUtils::MakeMaker: 6.42
   Test::Class: 0
   Test::More: 0
-configure_requires:
-  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.850'
+generated_by: 'Module::Install version 0.77'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -21,6 +18,7 @@ no_index:
     - t
 requires:
   Crypt::DH::GMP: 0.00005
+  Crypt::SSLeay: 0
   Data::Util: 0.50
   HTML::Entities: 0
   HTML::TreeBuilder: 0

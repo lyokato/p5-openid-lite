@@ -1,0 +1,14 @@
+http:///
+http://*/
+https://*/
+http://*.com
+http://*.com/
+https://*.com/
+http://*.com.au/
+http://*.co.uk/
+http://*.foo.notatld/
+https://*.foo.notatld/
+http://*.museum/
+https://*.museum/
+http://www.schtuffcom/
+http://it/

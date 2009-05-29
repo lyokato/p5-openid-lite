@@ -6,6 +6,7 @@ use warnings;
 use overload q{""} => sub { shift->as_string }, fallback => 1;
 
 use URI;
+use OpenID::Lite::Util::URI;
 
 sub new {
     my $class = shift;
@@ -35,8 +36,7 @@ sub normalize {
         # remove fragment
         $uri =~ s/\#.*$//;
 
-        # XXX: todo
-        # check if uri is correct.
+        $uri = OpenID::Lite::Util::URI->normalize($uri);
         my $u = URI->new($uri)->canonical;
         my $path = $u->path || '/';
         $self->{raw}

@@ -21,7 +21,7 @@ run {
     my $service    = $services->[0];
     is( $service->url, $block->server_url, q{server url} );
     is( $service->claimed_identifier, $block->claimed_identifier, q{claimed identifier} );
-    ok( $service->requires_compatibility_mode , q{ collect compat mode });
+    ok( !$service->requires_compatibility_mode , q{ collect compat mode });
     is( $service->preferred_namespace, $block->preferred_namespace, q{preferred namespace} );
 };
 
@@ -29,11 +29,11 @@ __DATA__
 
 ===
 --- identifier
-=lyo
+=zigorou
 --- server_url
-https://linksafe.ezibroker.net/server/
+https://authn.fullxri.com/authentication/
 --- claimed_identifier
-=!9978.5647.C6FA.BD12
+=!545A.6972.43FA.38AD
 --- preferred_namespace
-http://openid.net/xmlns/1.0
+http://specs.openid.net/auth/2.0
 

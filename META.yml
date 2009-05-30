@@ -28,6 +28,7 @@ requires:
   Mouse: 0.17
   MouseX::Types: 0.01
   String::Random: 0
+  URI::Escape: 0
   XML::LibXML: 0
   XRI::Resolution::Lite: 0.02
 resources:

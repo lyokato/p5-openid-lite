@@ -26,7 +26,7 @@ sub parse {
         or return $self->ERROR( sprintf q{No CanonicalID found for XRI "%s".},
         $identifier );
 
-    $self->_validate_canonical_id( \@xrd, $canonical_id )
+    $self->_validate_canonical_id( \@xrd, $canonical_id, $identifier )
         or return $self->ERROR( sprintf q{Invalid XRDS for XRI "%s".},
         $identifier );
 
@@ -39,9 +39,23 @@ sub parse {
 }
 
 sub _validate_canonical_id {
-    my ( $self, $xrd_list, $canonical_id ) = @_;
+    my ( $self, $xrd_list, $canonical_id, $iname ) = @_;
+    my $child_id = lc $canonical_id;
+    for my $xrd ( @$xrd_list ) {
+        my $parent_sought = substr($child_id, rindex($child_id, '!'));
+        my @cids = $xrd->findnodes(q{*[local-name()='CanonicalID']});
+        return 0 unless @cids > 0;
+        my $cid = $cids[0];
+        my $parent
+            = OpenID::Lite::Util::XRI->make_xri( $cid->findvalue(q{text()}) );
+        return 0 unless $parent;
+        return 0 if ($parent_sought ne lc $parent);
+        $child_id = $parent_sought;
+    }
 
-    # TODO: later
+    my $root = OpenID::Lite::Util::XRI->root_authority($iname);
+    return 0 unless
+        OpenID::Lite::Util::XRI->provider_is_authoritative($root, $child_id);
     1;
 }
 

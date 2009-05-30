@@ -20,6 +20,7 @@ requires(
     'String::Random'           => 0,
     'Crypt::DH::GMP'           => '0.00005',
     'Crypt::SSLeay' => 0,
+    'URI::Escape' => 0,
 );
 
 tests('t/*.t t/*/*.t');

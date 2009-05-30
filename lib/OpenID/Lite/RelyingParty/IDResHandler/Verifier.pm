@@ -8,7 +8,7 @@ use OpenID::Lite::Util::Nonce qw(split_nonce);
 
 has 'params' => (
     is       => 'ro',
-    isa      => 'OpenID::Lite::Params',
+    isa      => 'OpenID::Lite::Message',
     required => 1,
 );
 

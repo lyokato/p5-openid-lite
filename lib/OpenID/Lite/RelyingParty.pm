@@ -3,7 +3,7 @@ package OpenID::Lite::RelyingParty;
 use Any::Moose;
 
 use OpenID::Lite::Identifier;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::RelyingParty::CheckIDRequest;
@@ -125,7 +125,7 @@ sub associate {
 
 sub complete {
     my ( $self, $current_url, $query_params ) = @_;
-    my $params      = OpenID::Lite::Params->from_request($query_params);
+    my $params      = OpenID::Lite::Message->from_request($query_params);
     my $service     = $self->last_requested_endpoint;
     my $handle      = $params->get('assoc_handle');
     my $association = $self->store->find_association_by_handle($handle);

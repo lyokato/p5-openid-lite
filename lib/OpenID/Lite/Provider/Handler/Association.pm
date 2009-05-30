@@ -1,7 +1,7 @@
 package OpenID::Lite::Provider::Handler::Association;
 
 use Any::Moose;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::Constants::SessionType qw(:all);
 use OpenID::Lite::Constants::AssocType qw(:all);
 use OpenID::Lite::Association;
@@ -52,7 +52,7 @@ sub handle_request {
             return $self->ERROR(
                 q{Invalid assoc_type and session_type combination.});
         }
-        my $unsupported = OpenID::Lite::Params->new;
+        my $unsupported = OpenID::Lite::Message->new;
         $unsupported->set( ns => $req_params->ns );
         $unsupported->set(
             error => q{Invalid assoc_type and session_type combination.} );
@@ -67,7 +67,7 @@ sub handle_request {
     # build association
     my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
 
-    my $res_params = OpenID::Lite::Params->new;
+    my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns           => $req_params->ns );
     $res_params->set( expires_in   => $assoc->expires_in );
     $res_params->set( assoc_handle => $assoc->handle );

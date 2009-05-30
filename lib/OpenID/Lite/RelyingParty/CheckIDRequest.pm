@@ -2,7 +2,7 @@ package OpenID::Lite::RelyingParty::CheckIDRequest;
 
 use Any::Moose;
 use URI;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::Constants::Namespace qw(SPEC_2_0 IDENTIFIER_SELECT);
 use OpenID::Lite::Constants::ModeType qw(CHECKID_SETUP CHECKID_IMMEDIATE);
 use OpenID::Lite::Util::Nonce qw(gen_nonce);
@@ -107,7 +107,7 @@ sub should_send_redirect {
 
 sub _build__params {
     my $self   = shift;
-    my $params = OpenID::Lite::Params->new;
+    my $params = OpenID::Lite::Message->new;
     $params->set( ns => $self->service->preferred_namespace );
     return $params;
 }

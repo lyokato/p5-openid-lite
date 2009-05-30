@@ -37,6 +37,7 @@ sub normalize {
         $uri =~ s/\#.*$//;
 
         $uri = OpenID::Lite::Util::URI->normalize($uri);
+        return unless OpenID::Lite::Util::URI->is_uri($uri);
         my $u = URI->new($uri)->canonical;
         my $path = $u->path || '/';
         $self->{raw}

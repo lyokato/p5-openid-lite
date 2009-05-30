@@ -2,9 +2,9 @@ use strict;
 use warnings;
 
 use Test::More tests => 2;                      # last test to print
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 
-my $params = OpenID::Lite::Params->new;
+my $params = OpenID::Lite::Message->new;
 $params->set( mode => 'error' );
 $params->set( error => q{This is an example message} );
 

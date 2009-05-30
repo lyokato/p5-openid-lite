@@ -3,7 +3,7 @@ package OpenID::Lite::Provider::Handler::CheckID;
 use Any::Moose;
 use OpenID::Lite::Constants::ModeType qw(:all);
 use OpenID::Lite::Constants::Namespace qw(IDENTIFIER_SELECT);
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::Realm;
 use OpenID::Lite::Util::Nonce qw(gen_nonce);
 use URI;
@@ -61,7 +61,7 @@ sub handle_request {
     return $self->ERROR(q{Missing parameter, "identity"})
         unless $identity;
 
-    my $res_params = OpenID::Lite::Params->new;
+    my $res_params = OpenID::Lite::Message->new;
 
     my $is_identity = 0;
     if ( $identity eq IDENTIFIER_SELECT )  {
@@ -133,7 +133,7 @@ sub signed_return_url {
     $claimed_id ||= $identity;
     $claimed_id = $identity if $claimed_id eq IDENTIFIER_SELECT;
 
-    my $res_params = OpenID::Lite::Params->new;
+    my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns => $ns ) if $ns;
 
     $res_params->set( mode              => ID_RES         );

@@ -2,7 +2,7 @@ package OpenID::Lite::Provider::Handler::CheckAuth;
 
 use Any::Moose;
 use OpenID::Lite::SignatureMethods;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::Constants::ModeType qw(ID_RES);
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -50,7 +50,7 @@ sub handle_request {
     # Remove handle which already used. This is for against replay attack.
     $self->store->remove_private_association_by_handle($assoc_handle);
 
-    my $res_params = OpenID::Lite::Params->new;
+    my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns       => $req_params->ns );
     $res_params->set( is_valid => $is_valid       );
 

@@ -9,13 +9,13 @@ has 'session' => (
     required => 1,
 );
 
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::Constants::Namespace qw(SPEC_2_0);
 use OpenID::Lite::Constants::ModeType qw(ASSOCIATION);
 
 sub build_params {
     my ( $self, $service, $assoc_type ) = @_;
-    my $params = OpenID::Lite::Params->new;
+    my $params = OpenID::Lite::Message->new;
     unless ( $service->requires_compatibility_mode ) {
         $params->set( ns => SPEC_2_0 );
     }

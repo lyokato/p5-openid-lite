@@ -1,7 +1,7 @@
 package OpenID::Lite::SignatureMethod;
 
 use Any::Moose;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 
 sub sign {
     my ( $self, $secret, $params ) = @_;
@@ -9,7 +9,7 @@ sub sign {
     return unless $signed;
     my @signed = split /,/, $signed;
 
-    my $signed_params = OpenID::Lite::Params->new;
+    my $signed_params = OpenID::Lite::Message->new;
     for my $field (@signed) {
         $signed_params->set( $field, $params->get($field) );
     }

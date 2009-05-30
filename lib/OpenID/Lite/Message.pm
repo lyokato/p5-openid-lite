@@ -1,4 +1,4 @@
-package OpenID::Lite::Params;
+package OpenID::Lite::Message;
 
 use URI;
 use URI::Escape ();

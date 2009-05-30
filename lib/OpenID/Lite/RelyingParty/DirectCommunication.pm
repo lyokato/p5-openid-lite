@@ -5,7 +5,7 @@ with 'OpenID::Lite::Role::AgentHandler';
 with 'OpenID::Lite::Role::ErrorHandler';
 
 use HTTP::Request;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 
 sub send_request {
     my ( $self, $url, $params ) = @_;
@@ -15,7 +15,7 @@ sub send_request {
     my $res = $self->agent->request($req);
     # TODO: SSL restriction
     if ($res->is_success) {
-        my $params = OpenID::Lite::Params->from_key_value($res->content);
+        my $params = OpenID::Lite::Message->from_key_value($res->content);
         return $params;
     }
     return $self->ERROR($res->status_line);

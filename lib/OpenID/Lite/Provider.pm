@@ -1,7 +1,7 @@
 package OpenID::Lite::Provider;
 
 use Any::Moose;
-use OpenID::Lite::Params;
+use OpenID::Lite::Message;
 use OpenID::Lite::Provider::Discover;
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
@@ -18,7 +18,7 @@ sub handle_request {
 
 sub _build_request_params {
     my ( $self, $request ) = @_;
-    my $params = OpenID::Lite::Params->from_request($request);
+    my $params = OpenID::Lite::Message->from_request($request);
     return $params;
 }
 

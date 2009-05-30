@@ -1,9 +1,9 @@
 use strict;
-use Test::More tests => 14;
+use Test::More tests => 13;
 BEGIN { 
     # core
     use_ok('OpenID::Lite');
-    use_ok('OpenID::Lite::Params');
+    use_ok('OpenID::Lite::Message');
     use_ok('OpenID::Lite::Identifier');
 
     # constants
@@ -25,7 +25,7 @@ BEGIN {
     # association
     use_ok('OpenID::Lite::RelyingParty::Associator');
 
-    use_ok('OpenID::Lite::RelyingParty');
+    #use_ok('OpenID::Lite::RelyingParty');
 };
 
 

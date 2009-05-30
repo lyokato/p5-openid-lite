@@ -12,6 +12,7 @@ sub extract {
     my $location
         =  $tree->findvalue( $class->_build_xpath_with( XRDS_HEADER  ) )
         || $tree->findvalue( $class->_build_xpath_with( YADIS_HEADER ) );
+    return unless $location;
     return URI::Escape::uri_unescape($location);
 }
 

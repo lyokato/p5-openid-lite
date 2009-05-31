@@ -15,12 +15,12 @@ use Time::Local;
 sub gen_nonce {
     my $time = POSIX::strftime(q{%FT%TZ}, gmtime());
     my $random = String::Random->new;
-    my $salt = $random->randomregex('[a-zA-Z0-9]{6}');
+    my $salt = $random->randregex('[a-zA-Z0-9]{6}');
     return $time.$salt;
 }
 
 sub split_nonce {
-    my $nonce = shift; 
+    my $nonce = shift;
     my $pos = length(q{0000-00-00T00:00:00Z});
     my $timestamp = substr($nonce, 0, $pos);
     return if length($timestamp) < $pos;

@@ -4,7 +4,12 @@ extends 'OpenID::Lite::SignatureMethod';
 use Digest::SHA ();
 # key length 256
 
-override '_hmac_hash' => sub {
+override 'hmac_hash' => sub {
+    my ( $self, $secret, $key ) = @_;
+    return Digest::SHA::hmac_sha256( $key, $secret );
+};
+
+override 'hmac_hash_hex' => sub {
     my ( $self, $secret, $key ) = @_;
     return Digest::SHA::hmac_sha256( $key, $secret );
 };

@@ -60,7 +60,7 @@ sub gen_handle {
     my $assoc_type = shift;
     my $random     = String::Random->new;
     my $uniq       = MIME::Base64::encode_base64(
-        $random->randomregex(q![a-zA-Z0-9]{4}!) );
+        $random->randregex(q![a-zA-Z0-9]{4}!) );
     $uniq =~ s/\s+//g;
     my $handle = sprintf( '{%s}{%x}{%s}', $assoc_type, time(), $uniq );
     return $handle;
@@ -72,7 +72,7 @@ sub gen_secret {
     my $length     = $class->get_secret_size($assoc_type);
     return unless $length;
     my $random = String::Random->new;
-    my $secret = $random->randomregex( sprintf '[a-zA-Z0-9]{%d}', $length );
+    my $secret = $random->randregex( sprintf '[a-zA-Z0-9]{%d}', $length );
     return $secret;
 }
 

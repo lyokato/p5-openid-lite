@@ -15,7 +15,7 @@ sub sign {
         $signed_params->set( $field, $params->get($field) );
     }
     my $key = $signed_params->to_key_value();
-    my $hash = $self->_hmac_hash($secret, $key);
+    my $hash = $self->hmac_hash($secret, $key);
     my $sig = MIME::Base64::encode_base64($hash);
     $sig =~ s/\s+//g;
     return $sig;
@@ -30,7 +30,12 @@ sub verify {
     return $sig eq $signed;
 }
 
-sub _hmac_hash {
+sub hmac_hash {
+    my ( $self, $secret, $key ) = @_;
+    die "Abstract Method.";
+}
+
+sub hmac_hash_hex {
     my ( $self, $secret, $key ) = @_;
     die "Abstract Method.";
 }

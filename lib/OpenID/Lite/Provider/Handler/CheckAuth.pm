@@ -34,7 +34,7 @@ sub handle_request {
     my $is_valid = q{false};
     my $assoc = $self->store->find_private_association_by_handle($assoc_handle);
     if ( $assoc && !$assoc->is_expired ) {
-        my $signature_method = OpenID::Lite::SignatureMethods->select($assoc->type);
+        my $signature_method = OpenID::Lite::SignatureMethods->select_method($assoc->type);
         $is_valid = q{true} if $signature_method->verify($assoc->secret, $copied, $sig)
     }
 

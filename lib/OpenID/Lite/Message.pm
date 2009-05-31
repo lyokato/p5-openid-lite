@@ -32,9 +32,21 @@ sub register_extension_namespace {
 
 sub get {
     my ( $self, $key ) = @_;
-    return exists $self->{_params}{$key}
-        ? $self->{_params}{$key}
-        : undef;
+    if ($key =~ /^([^.]+)\.([^.]+)$/) {
+        my $ext_name = $1;
+        my $ext_key  = $2;
+        if ( $ext_name eq 'ns' ) {
+            return exists $self->{_extension_namespaces}{$ext_key}
+                ? $self->{_extension_namespaces}{$ext_key}
+                : undef;;
+        } else {
+            return $self->get_extension($ext_name, $ext_key);
+        }
+    } else {
+        return exists $self->{_params}{$key}
+            ? $self->{_params}{$key}
+            : undef;
+    }
 }
 
 sub get_extension {
@@ -65,8 +77,18 @@ sub get_extra_keys {
 
 sub set {
     my ( $self, $key, $value ) = @_;
-    $self->{_params}{$key} = $value
-        if ( defined $key && defined $value );
+    return unless ( defined $key && defined $value );
+    if ($key =~ /^([^.]+)\.([^.]+)$/) {
+        my $ext_name = $1;
+        my $ext_key  = $2;
+        if ($ext_name eq 'ns') {
+            $self->register_extension_namespace($ext_key, $value);
+        } else {
+            $self->set_extension($ext_name, $ext_key, $value);
+        }
+    } else {
+        $self->{_params}{$key} = $value;
+    }
 }
 
 sub set_extension {
@@ -123,7 +145,7 @@ sub to_key_value {
         "\n",
         map( sprintf( q{%s:%s}, $_, $self->{_params}{$_} ),
             sort keys %{ $self->{_params} } )
-    );
+    )."\n";
 }
 
 sub to_post_body {
@@ -169,6 +191,20 @@ sub to_hash {
         $params{$key} = $self->{_extra_params}{$key};
     }
     return \%params;
+}
+
+sub set_signed {
+    my $self = shift;
+    my @keys = grep { $_ ne q{sig} } keys %{ $self->{_params} };
+    for my $ext_name ( keys %{ $self->{_extension_namespaces} } ) {
+        push(@keys, sprintf(q{ns.%s}, $ext_name));
+        for my $ext_key ( keys %{ $self->{_extension_params}{$ext_name} } ) {
+            push(@keys, sprintf(q{%s.%s},$ext_name, $ext_key));
+        }
+    }
+    @keys = grep { $self->get($_) } @keys;
+    push(@keys, q{signed});
+    $self->set( signed => join(',', sort @keys));
 }
 
 sub is_openid1 {

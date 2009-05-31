@@ -2,6 +2,7 @@ package OpenID::Lite::SignatureMethod;
 
 use Any::Moose;
 use OpenID::Lite::Message;
+use MIME::Base64 ();
 
 sub sign {
     my ( $self, $secret, $params ) = @_;
@@ -14,11 +15,16 @@ sub sign {
         $signed_params->set( $field, $params->get($field) );
     }
     my $key = $signed_params->to_key_value();
-    return $self->_hmac_hash($secret, $key);
+    my $hash = $self->_hmac_hash($secret, $key);
+    my $sig = MIME::Base64::encode_base64($hash);
+    $sig =~ s/\s+//g;
+    return $sig;
 }
 
 sub verify {
-    my ( $self, $secret, $params, $sig ) = @_;
+    my ( $self, $secret, $params ) = @_;
+    my $sig = $params->get('sig');
+    return unless $sig;
     my $signed = $self->sign($secret, $params);
     return unless $signed;
     return $sig eq $signed;

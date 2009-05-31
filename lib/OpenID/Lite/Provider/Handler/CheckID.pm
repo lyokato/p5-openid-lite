@@ -152,7 +152,7 @@ sub signed_return_url {
 
     my $signed = q{};
     $res_params->set( signed => $signed );
-    my $signature_method = OpenID::Lite::SignatureMethods->select($assoc->type);
+    my $signature_method = OpenID::Lite::SignatureMethods->select_method($assoc->type);
     my $signature = $signature_method->sign($assoc->secret, $res_params);
     $res_params->set( sig => $signature );
     return $res_params;

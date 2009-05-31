@@ -6,7 +6,7 @@ use Digest::SHA ();
 
 override '_hmac_hash' => sub {
     my ( $self, $secret, $key ) = @_;
-    return Digest::SHA::hmac_sha256( $secret, $key );
+    return Digest::SHA::hmac_sha256( $key, $secret );
 };
 
 no Any::Moose;

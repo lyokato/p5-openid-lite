@@ -4,7 +4,7 @@ use Any::Moose;
 use OpenID::Lite::Message;
 use OpenID::Lite::Constants::SessionType qw(:all);
 use OpenID::Lite::Constants::AssocType qw(:all);
-use OpenID::Lite::Association;
+use OpenID::Lite::Provider::AssociationBuilder;
 use OpenID::Lite::SessionHandlers;
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -14,12 +14,17 @@ has 'secret_lifetime' => (
     default => 14 * 24 * 60 * 60,
 );
 
-has 'store' => (
-    is => 'rw',
-    #does => 'Storable',
-    #default => sub { OpenID::Lite::Provider::Store::Null->new },
+has 'server_secret' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => q{secret},
 );
 
+has '_assoc_builder' => (
+    is         => 'ro',
+    isa        => 'OpenID::Lite::Provider::AssociationBuilder',
+    lazy_build => 1,
+);
 
 sub handle_request {
     my ( $self, $req_params ) = @_;
@@ -44,7 +49,7 @@ sub handle_request {
 
     # check assoc_type
     my $assoc_type = $req_params->get('assoc_type') || '';
-    unless ($assoc_type && $req_params->is_openid1) {
+    unless ( $assoc_type && $req_params->is_openid1 ) {
         $assoc_type = HMAC_SHA1;
     }
     unless ( $session->can_handle_assoc_type($assoc_type) ) {
@@ -65,7 +70,13 @@ sub handle_request {
     }
 
     # build association
-    my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
+    my $assoc = $self->_assoc_builder->build_association(
+        type     => $assoc_type,
+        lifetime => $self->secret_lifetime,
+        dumb     => 0,
+    );
+
+#my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
 
     my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns           => $req_params->ns );
@@ -73,12 +84,18 @@ sub handle_request {
     $res_params->set( assoc_handle => $assoc->handle );
     $res_params->set( assoc_type   => $assoc->type );
 
-    $session->set_response_params( $req_params, $res_params,
-        $assoc );
+    $session->set_response_params( $req_params, $res_params, $assoc );
 
-    $self->store->save_association($assoc);
+    #$self->store->save_association($assoc);
 
     return $res_params;
+}
+
+sub _build__assoc_builder {
+    my $self = shift;
+    return OpenID::Lite::Provider::AssociationBuilder->new(
+        server_secret => $self->server_secret, 
+    );
 }
 
 no Any::Moose;

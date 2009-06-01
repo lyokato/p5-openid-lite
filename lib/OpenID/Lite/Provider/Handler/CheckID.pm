@@ -6,6 +6,7 @@ use OpenID::Lite::Constants::Namespace qw(IDENTIFIER_SELECT);
 use OpenID::Lite::Message;
 use OpenID::Lite::Realm;
 use OpenID::Lite::Nonce;
+use OpenID::Lite::Provider::AssociationBuilder;
 use URI;
 
 with 'OpenID::Lite::Role::ErrorHandler';
@@ -26,6 +27,24 @@ has 'redirect_for_setup' => (
     is      => 'ro',
     isa     => 'Bool',
     default => 1,
+);
+
+has 'secret_lifetime' => (
+    is      => 'ro',
+    isa     => 'Int',
+    default => 86400,
+);
+
+has 'server_secret' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => q{secret},
+);
+
+has '_assoc_builder' => (
+    is         => 'ro',
+    isa        => 'OpenID::Lite::Provider::AssociationBuilder',
+    lazy_build => 1,
 );
 
 # callbacks
@@ -128,17 +147,26 @@ sub signed_return_url {
     my $assoc;
     my $invalidate_handle;
     if ($assoc_handle) {
-
-        # my $found = $self->store->find_association_by_handle($assoc_handle);
-        # if ( $found && !$found->is_expired ) {
-        #    $assoc = $found;
-        # }
+        my $found = $self->_assoc_builder->build_from_handle(
+            $assoc_handle => {
+                dumb     => 0,
+                lifetime => $self->secret_lifetime,
+            }
+        );
+        if ( $found && !$found->is_expired ) {
+            $assoc = $found;
+        }
+        else {
+            $invalidate_handle = $assoc_handle;
+        }
     }
 
     unless ($assoc) {
 
-        # $assoc = $self->generate_assoc();
-        # $invalidate_handle = $assoc->handle if $assoc;
+        $assoc = $self->_assoc_builder->build_association(
+            type => q{HMAC-SHA1},
+            dumb => 1,
+        );
     }
 
     $claimed_id ||= $identity;
@@ -161,8 +189,7 @@ sub signed_return_url {
         $res_params->set( op_endpoint    => $self->endpoint_url );
     }
 
-    my $signed = q{};
-    $res_params->set( signed => $signed );
+    $res_params->set_signed();
     my $signature_method
         = OpenID::Lite::SignatureMethods->select_method( $assoc->type );
     my $signature = $signature_method->sign( $assoc->secret, $res_params );
@@ -177,6 +204,12 @@ sub cancel_return_url {
     # openid.ns =>
     $url->query_form( 'openid.mode' => CANCEL );
     return $url->as_string;
+}
+
+sub _build__assoc_builder {
+    my $self = shift;
+    return OpenID::Lite::Provider::AssociationBuilder->new(
+        server_secret => $self->server_secret, );
 }
 
 no Any::Moose;

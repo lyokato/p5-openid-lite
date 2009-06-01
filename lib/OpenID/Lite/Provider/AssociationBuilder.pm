@@ -1,4 +1,4 @@
-package OpenID::Lite::Association::Builder::HMAC;
+package OpenID::Lite::Provider::AssociationBuilder;
 
 use Any::Moose;
 use Digest::SHA;
@@ -27,16 +27,12 @@ has 'secret_gen_interval' => (
     default => 86400,
 );
 
-has 'secret_lifetime' => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 86400,
-);
-
 sub build_association {
-    my $self = shift;
-    my $type = shift;
-    my $dumb = shift || 0;
+    my $self     = shift;
+    my %opts     = @_;
+    my $type     = $opts{type};
+    my $dumb     = $opts{dumb} || 0;
+    my $lifetime = $opts{lifetime} || 86400;
 
     my $signature_method
         = OpenID::Lite::SignatureMethods->select_method($type)
@@ -49,29 +45,50 @@ sub build_association {
 
     my $random = String::Random->new;
     my $nonce = $random->randregex( sprintf '[a-zA-Z0-9]{%d}', 20 );
-    $nonce = sprintf(q{STLS.%s}, $nonce) if $dumb;
+    $nonce = sprintf( q{STLS.%s}, $nonce ) if $dumb;
 
     my $handle = sprintf( q{%d:%s:%s}, $now, $type, $nonce );
     $handle
         .= ":"
         . substr( $signature_method->hmac_hash_hex( $handle, $s_sec ), 0,
         10 );
-    my $c_sec = $self->secret_of_handle( $handle, $dumb )
+    my $c_sec = $self->secret_of_handle( $handle, $dumb, 1 )
         or return;
 
     my $assoc = OpenID::Lite::Association->new(
         secret     => $c_sec,
         handle     => $handle,
         type       => $type,
-        expires_in => $self->secret_lifetime,
+        expires_in => $lifetime,
         issued     => $now
     );
     return $assoc;
 }
 
+sub build_from_handle {
+    my ( $self, $handle, $opts ) = @_;
+
+    my $dumb     = $opts->{dumb}     || 0;
+    my $lifetime = $opts->{lifetime} || 86400;
+    my ( $time, $type, $nonce, $nonce_sig80 ) = split( /:/, $handle );
+    return $self->ERROR(q{not found proper time,type,nonce and nonce_sig80})
+        unless $time =~ /^\d+$/ && $type && $nonce && $nonce_sig80;
+
+    my $secret = $self->secret_of_handle( $handle, $dumb )
+        or return;
+
+    return OpenID::Lite::Association->new(
+        secret     => $secret,
+        handle     => $handle,
+        type       => $type,
+        issued     => $time,
+        expires_in => $lifetime,
+    );
+
+}
+
 sub secret_of_handle {
-    my ( $self, $handle, $dumb, %opts ) = @_;
-    my $no_verify = $opts{no_verify} || 0;
+    my ( $self, $handle, $dumb, $no_verify ) = @_;
     my ( $time, $type, $nonce, $nonce_sig80 ) = split( /:/, $handle );
     return $self->ERROR(q{not found proper time,type,nonce and nonce_sig80})
         unless $time =~ /^\d+$/ && $type && $nonce && $nonce_sig80;

@@ -9,7 +9,7 @@ use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::RelyingParty::CheckIDRequest;
 
 #use OpenID::Lite::RelyingParty::IDResHandler;
-use OpenID::Lite::RelyingParty::Store::Null;
+use OpenID::Lite::RelyingParty::Store::OnMemory;
 
 use Data::Util qw(:check);
 use URI;
@@ -38,7 +38,7 @@ has 'session' => (
 has 'store' => (
     is      => 'rw',
     does    => 'OpenID::Lite::Role::Storable',
-    default => sub { OpenID::Lite::RelyingParty::Store::Null->new },
+    default => sub { OpenID::Lite::RelyingParty::Store::OnMemory->new },
 );
 
 with 'OpenID::Lite::Role::ErrorHandler';

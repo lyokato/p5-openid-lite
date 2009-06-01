@@ -18,14 +18,14 @@ has 'nonces' => (
 
 sub store_association {
     my ( $self, $server_url, $assoc ) = @_;
-    my $assocs = $self->associations->{$server_url};
+    my $assocs = $self->associations->{$server_url}||{};
     $assocs->{ $assoc->handle } = $assoc->copy();
     $self->associations->{$server_url} = $assocs;
 }
 
 sub get_association {
     my ( $self, $server_url, $handle ) = @_;
-    my $assocs = $self->associations->{$server_url};
+    my $assocs = $self->associations->{$server_url}||{};
     my $assoc;
     if ($handle) {
         $assoc = $assocs->{$handle};
@@ -39,14 +39,15 @@ sub get_association {
 
 sub remove_association {
     my ( $self, $server_url, $handle ) = @_;
-    my $assocs = $self->associations->{$server_url};
-    delete $assocs->{$handle};
+    my $assocs = $self->associations->{$server_url}||{};
+    return delete $assocs->{$handle} ? 1 : 0;
 }
 
 sub cleanup_associations {
     my $self  = shift;
     my $count = 0;
-    for my $assocs ( keys %{ $self->associations } ) {
+    for my $server_url ( keys %{ $self->associations } ) {
+        my $assocs = $self->associations->{$server_url};
         for my $handle ( keys %$assocs ) {
             my $assoc = $assocs->{$handle};
 

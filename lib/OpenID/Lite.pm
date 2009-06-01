@@ -11,12 +11,16 @@ OpenID::Lite - Yet Another OpenID Consumer/Server support library
 
 =head1 SYNOPSIS
 
-
 =head1 DESCRIPTION
 
-Not stable yet.
+* NOT STABLE YET *
+
+This module allows you to support OpenID 2.0 full spec.
+Most of the code is ported from ruby-openid which is provided by OpenID Enabled.
 
 =head1 SEE ALSO
+
+You can start with these two modules.
 
 L<OpenID::Lite::RelyingParty>
 L<OpenID::Lite::Provider>

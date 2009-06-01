@@ -7,21 +7,21 @@ name 'OpenID-Lite';
 all_from 'lib/OpenID/Lite.pm';
 
 requires(
-    'Mouse'                    => '0.17',
-    'MouseX::Types'            => '0.01',
-    'XRI::Resolution::Lite'    => '0.02',
-    'HTML::TreeBuilder::XPath' => '0.09',
-    'LWPx::ParanoidAgent'      => '1.04',
-    'HTTP::Request'            => 0,
-    'Data::Util'               => '0.50',
-    'HTML::Entities'           => 0,
-    'HTML::TreeBuilder'        => 0,
-    'XML::LibXML'              => 0,
-    'String::Random'           => 0,
-    'Crypt::DH::GMP'           => '0.00005',
-    'Crypt::SSLeay' => 0,
-    'URI::Escape' => 0,
-    'POSIX::strptime' => 0,
+    'Mouse'                      => '0.17',
+    'MouseX::Types'              => '0.01',
+    'XRI::Resolution::Lite'      => '0.02',
+    'HTML::TreeBuilder::XPath'   => '0.09',
+    'LWPx::ParanoidAgent'        => '1.04',
+    'HTTP::Request'              => 0,
+    'Data::Util'                 => '0.50',
+    'HTML::Entities'             => 0,
+    'HTML::TreeBuilder'          => 0,
+    'XML::LibXML'                => 0,
+    'String::Random'             => 0,
+    'Crypt::DH::GMP'             => '0.00005',
+    'Crypt::SSLeay'              => 0,
+    'URI::Escape'                => 0,
+    'DateTime::Format::Strptime' => 0,
 );
 
 tests('t/*.t t/*/*.t');
@@ -29,7 +29,7 @@ tests('t/*.t t/*/*.t');
 #author_tests('xt');
 test_requires(
     'Test::More'  => 0,
-    'Test::Class' => 0,
+#    'Test::Class' => 0,
 );
 
 auto_include;

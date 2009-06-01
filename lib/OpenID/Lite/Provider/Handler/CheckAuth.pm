@@ -3,6 +3,7 @@ package OpenID::Lite::Provider::Handler::CheckAuth;
 use Any::Moose;
 use OpenID::Lite::SignatureMethods;
 use OpenID::Lite::Message;
+use OpenID::Lite::Nonce;
 use OpenID::Lite::Constants::ModeType qw(ID_RES);
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -41,7 +42,7 @@ sub handle_request {
     # XXX: what about openid1.X ?
     # if ( $req_params->is_openid2 )
     #     my $nonce = $req_params->get('response_nonce');
-    #     my ($nonce_timestamp, $nonce_str) = split_nonce($nonce);
+    #     my ($nonce_timestamp, $nonce_str) = OpenID::Lite::Nonce->split_nonce($nonce);
     #     unless ($self->check_nonce->($nonce_str, $nonce_timestamp)) {
     #         return $self->ERROR(q{Invalid nonce.});
     #     }

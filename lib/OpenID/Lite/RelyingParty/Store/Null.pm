@@ -3,27 +3,30 @@ package OpenID::Lite::RelyingParty::Store::Null;
 use Any::Moose;
 with 'OpenID::Lite::Role::Storable';
 
-sub find_association_by_server_url {
-    my ( $self, $server_url ) = @_;
+sub store_association {
+
 }
 
-sub save_association {
-    my ( $self, $server_url, $association ) = @_;
+sub get_association {
+
 }
 
-sub find_association_by_handle {
-    my ( $self, $assoc_handle ) = @_;
+sub remove_association {
+
 }
 
-sub get {
-    my ( $self, $key ) = @_;
-    return;
+sub cleanup_associations {
+
 }
 
-sub set {
-    my ( $self, $key, $value ) = @_;
-    return;
+sub use_nonce {
+
 }
+
+sub cleanup_nonces {
+
+}
+
 
 no Any::Moose;
 __PACKAGE__->meta->make_immutable;

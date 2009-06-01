@@ -5,7 +5,7 @@ use URI;
 use OpenID::Lite::Message;
 use OpenID::Lite::Constants::Namespace qw(SPEC_2_0 IDENTIFIER_SELECT);
 use OpenID::Lite::Constants::ModeType qw(CHECKID_SETUP CHECKID_IMMEDIATE);
-use OpenID::Lite::Util::Nonce qw(gen_nonce);
+use OpenID::Lite::Nonce;
 
 has 'anonymous' => (
     is      => 'rw',
@@ -70,7 +70,7 @@ sub gen_params {
         my $return_to = URI->new( $args{return_to} );
         if ( $self->service->requires_compatibility_mode ) {
             $return_to->query_form(
-                rp_nonce   => gen_nonce(),
+                rp_nonce   => OpenID::Lite::Nonce->gen_nonce(),
                 claimed_id => $self->service->claimed_identifier,
             );
         }

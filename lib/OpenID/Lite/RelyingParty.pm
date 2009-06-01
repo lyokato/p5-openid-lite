@@ -7,7 +7,8 @@ use OpenID::Lite::Message;
 use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::RelyingParty::CheckIDRequest;
-use OpenID::Lite::RelyingParty::IDResHandler;
+
+#use OpenID::Lite::RelyingParty::IDResHandler;
 use OpenID::Lite::RelyingParty::Store::Null;
 
 use Data::Util qw(:check);
@@ -35,9 +36,8 @@ has 'session' => (
 );
 
 has 'store' => (
-    is => 'rw',
-
-    #does => 'OpenID::Lite::Role::Storable',
+    is      => 'rw',
+    does    => 'OpenID::Lite::Role::Storable',
     default => sub { OpenID::Lite::RelyingParty::Store::Null->new },
 );
 
@@ -105,7 +105,7 @@ sub discover {
     my @op_identifiers = grep { $_->is_op_identifier } @$services;
     return \@op_identifiers if @op_identifiers > 0;
 
-    my @sorted_servieces
+    my @sorted_services
         = sort { $a->type_priority <=> $b->type_priority } @$services;
     return \@sorted_services;
 }
@@ -114,11 +114,12 @@ sub associate {
     my ( $self, $service ) = @_;
     my $server_url = $service->url;
     my $association
-        = $self->store->find_association_by_server_url($server_url);
+        = $self->store->get_association($server_url);
     if ( !$association || $association->is_expired ) {
         $association = $self->_associator->associate($service)
             or return $self->ERROR( $self->_associator->errstr );
-        $self->store->save_association( $server_url => $association );
+        $self->store->store_association( $server_url => $association )
+            if $association;
     }
     return $association;
 }
@@ -128,7 +129,7 @@ sub complete {
     my $params      = OpenID::Lite::Message->from_request($query_params);
     my $service     = $self->last_requested_endpoint;
     my $handle      = $params->get('assoc_handle');
-    my $association = $self->store->find_association_by_handle($handle);
+    my $association = $self->store->get_association($service, $handle);
     my %args        = (
         current_url => $current_url,
         params      => $params,
@@ -176,8 +177,9 @@ sub _build__associator {
 
 sub _build__id_res_handler {
     my $self = shift;
-    return OpenID::Lite::RelyingParty::IDResHandler->new(
-        agent => $self->agent, );
+
+    #    return OpenID::Lite::RelyingParty::IDResHandler->new(
+    #        agent => $self->agent, );
 }
 
 no Any::Moose;

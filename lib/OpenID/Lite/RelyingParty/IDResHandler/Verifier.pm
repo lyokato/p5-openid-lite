@@ -4,7 +4,7 @@ use Any::Moose;
 use URI;
 use List::MoreUtils qw(any);
 use Any::MooseX::Types::URI qw(Uri);
-use OpenID::Lite::Util::Nonce qw(split_nonce);
+use OpenID::Lite::Nonce;
 
 has 'params' => (
     is       => 'ro',
@@ -173,7 +173,7 @@ sub _check_nonce {
         return $self->ERROR(q{No proper nonce found.});
     }
 
-    my ( $timestamp, $unique ) = split_nonce($nonce)
+    my ( $timestamp, $unique ) = OpenID::Lite::Nonce->split_nonce($nonce)
         or
         return $self->ERROR( sprintf q{Invalid response_nonce format. "%s"},
         $nonce );

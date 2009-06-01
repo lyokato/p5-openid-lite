@@ -5,7 +5,7 @@ use OpenID::Lite::Constants::ModeType qw(:all);
 use OpenID::Lite::Constants::Namespace qw(IDENTIFIER_SELECT);
 use OpenID::Lite::Message;
 use OpenID::Lite::Realm;
-use OpenID::Lite::Util::Nonce qw(gen_nonce);
+use OpenID::Lite::Nonce;
 use URI;
 
 with 'OpenID::Lite::Role::ErrorHandler';
@@ -29,10 +29,10 @@ has 'redirect_for_setup' => (
 );
 
 # callbacks
-has 'get_user' => ();
+has 'get_user'     => ();
 has 'get_identity' => ();
-has 'is_identity' => ();
-has 'is_trusted' => ();
+has 'is_identity'  => ();
+has 'is_trusted'   => ();
 
 sub handle_request {
 
@@ -42,15 +42,17 @@ sub handle_request {
     return $self->ERROR(q{Missing parameter, "return_to"})
         unless $return_to && $return_to =~ m!https?://!;
 
-    my $realm_key = $req_params->is_openid2
+    my $realm_key
+        = $req_params->is_openid2
         ? 'realm'
         : 'trust_root';
     my $realm = $req_params->get($realm_key);
 
-    if ( $realm ) {
+    if ($realm) {
         return $self->ERROR(q{Invalid realm or return_to.})
-            unless OpenID::Lite::Ream->check_url($realm, $return_to);
-    } else {
+            unless OpenID::Lite::Ream->check_url( $realm, $return_to );
+    }
+    else {
         $realm = $return_to;
     }
     $realm =~ s/\?.*//;
@@ -64,15 +66,17 @@ sub handle_request {
     my $res_params = OpenID::Lite::Message->new;
 
     my $is_identity = 0;
-    if ( $identity eq IDENTIFIER_SELECT )  {
-        $identity = $self->get_identity->($user);
+    if ( $identity eq IDENTIFIER_SELECT ) {
+        $identity    = $self->get_identity->($user);
         $is_identity = 0;
-    } else {
-        $is_identity = $self->is_identity->($user, $identity);
     }
-    my $is_trusted  = $self->is_trusted->($user, $realm)
+    else {
+        $is_identity = $self->is_identity->( $user, $identity );
+    }
+    my $is_trusted = $self->is_trusted->( $user, $realm )
         if $is_identity;
-    if ( $is_trusted ) {
+    if ($is_trusted) {
+
         # $url = $self->gen_signed_response();
         return;
     }
@@ -82,20 +86,25 @@ sub handle_request {
     my $mode = $req_params->get('mode');
     if ( $mode eq CHECKID_IMMEDIATE ) {
         if ( $req_params->is_openid2 ) {
-            $res_params->set( ns => $req_params->get('ns') );
+            $res_params->set( ns   => $req_params->get('ns') );
             $res_params->set( mode => SETUP_NEEDED );
-        } else {
-            $res_params->set( mode => ID_RES );
+        }
+        else {
+            $res_params->set( mode           => ID_RES );
             $res_params->set( user_setup_url => $setup_url );
         }
+
         # return as error-redirect
         return;
     }
 
     if ( $self->redirect_for_setup ) {
+
         # return setup_url as redirect-mode
         return;
-    } else {
+    }
+    else {
+
         # return setup params as setup-mode
         return;
     }
@@ -108,24 +117,26 @@ sub signed_return_url {
     my $return_to    = $args{return_to};
     my $assoc_handle = $args{assoc_handle};
     my $ns           = $args{ns};
-    my $extra        = $args{extra}||{};
-    my $realm        = $args{realm}||$args{trust_root};
+    my $extra        = $args{extra} || {};
+    my $realm        = $args{realm} || $args{trust_root};
 
-    unless ( OpenID::Lite::Realm->check_url($realm, $return_to) ) {
+    unless ( OpenID::Lite::Realm->check_url( $realm, $return_to ) ) {
         return $self->ERROR(q{});
     }
 
     # check association
     my $assoc;
     my $invalidate_handle;
-    if ( $assoc_handle ) {
+    if ($assoc_handle) {
+
         # my $found = $self->store->find_association_by_handle($assoc_handle);
         # if ( $found && !$found->is_expired ) {
         #    $assoc = $found;
         # }
     }
 
-    unless ( $assoc ) {
+    unless ($assoc) {
+
         # $assoc = $self->generate_assoc();
         # $invalidate_handle = $assoc->handle if $assoc;
     }
@@ -136,31 +147,33 @@ sub signed_return_url {
     my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns => $ns ) if $ns;
 
-    $res_params->set( mode              => ID_RES         );
-    $res_params->set( identity          => $identity      );
-    $res_params->set( return_to         => $return_to     );
-    $res_params->set( assoc_handle      => $assoc->handle );
+    $res_params->set( mode         => ID_RES );
+    $res_params->set( identity     => $identity );
+    $res_params->set( return_to    => $return_to );
+    $res_params->set( assoc_handle => $assoc->handle );
 
     $res_params->set( invalidate_handle => $invalidate_handle )
         if $invalidate_handle;
 
     if ( $res_params->is_openid2 ) {
-        $res_params->set( claimed_id     => $claimed_id         );
-        $res_params->set( response_nonce => gen_nonce()         );
+        $res_params->set( claimed_id     => $claimed_id );
+        $res_params->set( response_nonce => OpenID::Lite::Nonce->gen_nonce );
         $res_params->set( op_endpoint    => $self->endpoint_url );
     }
 
     my $signed = q{};
     $res_params->set( signed => $signed );
-    my $signature_method = OpenID::Lite::SignatureMethods->select_method($assoc->type);
-    my $signature = $signature_method->sign($assoc->secret, $res_params);
+    my $signature_method
+        = OpenID::Lite::SignatureMethods->select_method( $assoc->type );
+    my $signature = $signature_method->sign( $assoc->secret, $res_params );
     $res_params->set( sig => $signature );
     return $res_params;
 }
 
 sub cancel_return_url {
     my ( $self, $return_to ) = @_;
-    my $url = URI->new( $return_to );
+    my $url = URI->new($return_to);
+
     # openid.ns =>
     $url->query_form( 'openid.mode' => CANCEL );
     return $url->as_string;

@@ -2,76 +2,83 @@ package OpenID::Lite::RelyingParty::IDResHandler;
 
 use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
+with 'OpenID::Lite::Role::AgentHandler';
 
-use Params::Validate qw(HASHREF);
-use OpenID::Lite::RelyingParty::IDResHandler::Result;
+use Params::Validate;
+use OpenID::Lite::RelyingParty::CheckID::Result;
 use OpenID::Lite::RelyingParty::IDResHandler::Verifier;
-use OpenID::Lite::Constants::ModeType qw(ID_RES SETUP_NEEDED CANCEL);
+use OpenID::Lite::Constants::ModeType qw(ID_RES SETUP_NEEDED CANCEL ERROR);
+
+has 'store' => (
+    is => 'ro',
+);
 
 sub idres {
     my $self = shift;
     my %args = Params::Validate::validate(
         @_,
         {   current_url => 1,
-            params      => { type => HASHREF },
+            params      => {
+                isa => 'OpenID::Lite::Message',
+            },
             service     => {
                 isa      => 'OpenID::Lite::RelyingParty::Discover::Service',
-                optional => 1
-            },
-            association => {
-                isa      => 'OpenID::Lite::Association',
                 optional => 1
             },
         }
     );
 
-    my $params      = $args{params};
-    my $service     = $args{service};
-    my $association = $args{association};
+    my $params  = $args{params};
+    my $service = $args{service};
 
     my $mode = $params->get('mode');
-    if ( $mode eq ID_RES ) {
+    if ( !$mode ) {
+        return OpenID::Lite::RelyingParty::CheckID::Result->new(
+            type    => q{not_openid},
+            message => sprintf(q{Unknown mode, "%s"}, $mode),
+        );
+    }
+    elsif ( $mode eq ID_RES ) {
         if ( $params->is_openid1 && $params->get('user_setup_url') ) {
-            return $self->_create_result_with_status(SETUP_NEEDED);
+            return OpenID::Lite::RelyingParty::CheckID::Result->new(
+                type => q{setup_needed},
+                url  => $params->get('user_setup_url'),
+            );
         }
-        my $verifier = $self->_create_verifier(%args)
-            or return $self->ERROR();
+        $args{agent} = $self->agent;
+        $args{store} = $self->store if $self->store;
+        my $verifier = OpenID::Lite::RelyingParty::IDResHandler::Verifier->new(%args);
         my $result = $verifier->verify();
         return $result;
     }
     elsif ( $mode eq SETUP_NEEDED ) {
         unless ( $params->is_openid1 ) {
-            return $self->_create_result_with_status(SETUP_NEEDED);
+            return OpenID::Lite::RelyingParty::CheckID::Result->new(
+                type => q{setup_needed},
+                url  => $params->get('user_setup_url') || '',
+            );
         }
     }
     elsif ( $mode eq CANCEL ) {
-        return $self->_create_result_with_status(CANCEL);
+        return OpenID::Lite::RelyingParty::CheckID::Result->new(
+            type => q{cancel},
+        );
     }
-
-    #return $self->ERROR();
-    return $self->_create_result_with_status();
-}
-
-sub _create_verifier {
-    my ( $self, %args ) = @_;
-    my $verifier;
-    if ( $args{params}->is_openid1 ) {
-        $verifier
-            = OpenID::Lite::RelyingParty::IDResHandler::Verifier::OpenID1
-            ->new(%args);
+    elsif ( $mode eq q{error} ) {
+        my $error     = $params->get('error')     || '';
+        my $contact   = $params->get('contact')   || '';
+        my $reference = $params->get('reference') || '';
+        return OpenID::Lite::RelyingParty::CheckID::Result->new(
+            type      => q{error},
+            message   => $error,
+            contact   => $contact,
+            reference => $reference,
+        );
     }
-    elsif ( $args{params}->is_openid2 ) {
-        $verifier
-            = OpenID::Lite::RelyingParty::IDResHandler::Verifier::OpenID2
-            ->new(%args);
-    }
-    return $verifier;
-}
-
-sub _create_result_with_status {
-    my ( $self, $status ) = @_;
-    return OpenID::Lite::RelyingParty::IDResHandler::Result->new(
-        status => $status, );
+    return OpenID::Lite::RelyingParty::CheckID::Result->new(
+        type    => q{error},
+        message => sprintf(q{Unknown mode, "%s"}, $mode),
+    );
 }
 
 no Any::Moose;

@@ -6,9 +6,9 @@ use OpenID::Lite::Identifier;
 use OpenID::Lite::Message;
 use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::RelyingParty::Associator;
-use OpenID::Lite::RelyingParty::CheckIDRequest;
+use OpenID::Lite::RelyingParty::CheckID::Request;
 
-#use OpenID::Lite::RelyingParty::IDResHandler;
+use OpenID::Lite::RelyingParty::IDResHandler;
 use OpenID::Lite::RelyingParty::Store::OnMemory;
 
 use Data::Util qw(:check);
@@ -49,14 +49,12 @@ with 'OpenID::Lite::Role::Discoverer';
 sub begin {
     my ( $self, $user_suplied_identifier, $anonymous ) = @_;
 
-    # TODO: cache control
-    my $identifier = $self->normalize_identifier($user_suplied_identifier)
-        or return;
-    my $services = $self->discover($identifier)
-        or return;
+    my $identifier = $self->normalize_identifier($user_suplied_identifier);
+    return unless $identifier;
 
-    # TODO: cache service?
-    # TODO: pick up proper one from discovered services
+    my $services = $self->discover($identifier);
+    return unless $services;
+
     my $service = $services->[0];
 
     $self->begin_without_discovery( $service, $anonymous );
@@ -64,14 +62,19 @@ sub begin {
 
 sub begin_without_discovery {
     my ( $self, $service, $anonymous ) = @_;
-    my $association = $self->associate($service)
-        or return;    # or do checkid request with stateless mode?
-    my $checkid_req = OpenID::Lite::RelyingParty::CheckIDRequest->new(
-        service     => $service,
-        association => $association,
-        anonymous   => ( $anonymous ? 1 : 0 ),
-    );
+
+    my $association = $self->associate($service);
+
+    #return unless $association;
+
+    my %params = ( service => $service );
+    $params{association} = $association if $association;
+    $params{anonymous}   = 1            if $anonymous;
+
+    my $checkid_req
+        = OpenID::Lite::RelyingParty::CheckID::Request->new(%params);
     $self->last_requested_endpoint($service);
+
     return $checkid_req;
 }
 
@@ -98,26 +101,41 @@ sub normalize_identifier {
 }
 
 sub discover {
-    my $self     = shift;
-    my $services = $self->_discoverer->discover(@_)
-        or return $self->ERROR( $self->_discoverer->errstr );
+    my ( $self, $identifier ) = @_;
 
+    # execute discovery
+    my $services = $self->_discoverer->discover($identifier)
+        or return $self->ERROR( $self->_discoverer->errstr );
+    return $self->ERROR( sprintf q{Service not found for identifier %s},
+        $identifier )
+        unless @$services > 0;
+
+    # pick up op-identifier information if it exists
     my @op_identifiers = grep { $_->is_op_identifier } @$services;
     return \@op_identifiers if @op_identifiers > 0;
 
+    # sorted by priority
+    # we like 2.0 service endpoint rather than 1.X.
     my @sorted_services
         = sort { $a->type_priority <=> $b->type_priority } @$services;
+
     return \@sorted_services;
 }
 
 sub associate {
     my ( $self, $service ) = @_;
     my $server_url = $service->url;
-    my $association
-        = $self->store->get_association($server_url);
+
+    # find association related to passed server-url
+    my $association = $self->store->get_association($server_url);
+
+    # if there isn't available association,
+    # it starts to negotiate with provider to obtain new association.
     if ( !$association || $association->is_expired ) {
         $association = $self->_associator->associate($service)
             or return $self->ERROR( $self->_associator->errstr );
+
+        # if it finished successfully, save it.
         $self->store->store_association( $server_url => $association )
             if $association;
     }
@@ -125,17 +143,14 @@ sub associate {
 }
 
 sub complete {
-    my ( $self, $current_url, $query_params ) = @_;
-    my $params      = OpenID::Lite::Message->from_request($query_params);
-    my $service     = $self->last_requested_endpoint;
-    my $handle      = $params->get('assoc_handle');
-    my $association = $self->store->get_association($service, $handle);
-    my %args        = (
+    my ( $self, $current_url, $request ) = @_;
+    my $params  = OpenID::Lite::Message->from_request($request);
+    my $service = $self->last_requested_endpoint;
+    my %args    = (
         current_url => $current_url,
         params      => $params,
     );
-    $args{service}     = $service     if $service;
-    $args{association} = $association if $association;
+    $args{service} = $service if $service;
     my $result = $self->idres(%args);
     return $result;
 }
@@ -145,18 +160,16 @@ sub idres {
     my %args = Params::Validate::validate(
         @_,
         {   current_url => 1,
-            params      => { type => HASHREF },
+            params      => {
+                isa => 'OpenID::Lite::Message',
+            },
             service     => {
                 isa      => 'OpenID::Lite::RelyingParty::Discover::Service',
                 optional => 1
             },
-            association => {
-                isa      => 'OpenID::Lite::Association',
-                optional => 1
-            },
         }
     );
-    $self->_id_res_handler->idres(%args)
+    return $self->_id_res_handler->idres(%args)
         || $self->ERROR( $self->_id_res_handler->errstr );
 }
 
@@ -177,9 +190,10 @@ sub _build__associator {
 
 sub _build__id_res_handler {
     my $self = shift;
-
-    #    return OpenID::Lite::RelyingParty::IDResHandler->new(
-    #        agent => $self->agent, );
+    return OpenID::Lite::RelyingParty::IDResHandler->new(
+        agent => $self->agent,
+        store => $self->store,
+    );
 }
 
 no Any::Moose;
@@ -216,10 +230,9 @@ OpenID::Lite::RelyingParty - relying party clinet
     sub return_to {
         my $self = shift;
         my $openid = OpenID::Lite::RelyingParty->new;
-        my $params = $self->request->params;
 
         # XXX: fix me
-        my $result = $openid->complete( q{http://myapp/return_to}, $params );
+        my $result = $openid->complete( q{http://myapp/return_to}, $self->request );
         if ( $result->is_success ) {
 
         } elsif ( $result->is_canceled ) {
@@ -230,11 +243,8 @@ OpenID::Lite::RelyingParty - relying party clinet
 
         }
     }
-    
 
 =head1 DESCRIPTION
-
-
 
 =head1 METHODS
 
@@ -249,6 +259,5 @@ Copyright (C) 2009 by Lyo Kato
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut

@@ -56,7 +56,7 @@ Constructor.
 
 Discover interface.
 See also L<OpenID::Lite::Role::Discoverer>.
-This returns L<OpenID::Lite::RelyingParty::Discover::DiscoveredInformation> object.
+This returns L<OpenID::Lite::RelyingParty::Discover::Service> object.
 
     my $info = $discover->discover( $identity );
 

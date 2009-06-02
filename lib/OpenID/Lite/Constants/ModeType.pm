@@ -15,6 +15,7 @@ our %EXPORT_TAGS = (
             SETUP_NEEDED
             CANCEL
             CHECK_AUTHENTICATION
+            ERROR
             )
     ],
 );
@@ -27,6 +28,7 @@ use constant ID_RES               => 'id_res';
 use constant SETUP_NEEDED         => 'setup_needed';
 use constant CANCEL               => 'cancel';
 use constant CHECK_AUTHENTICATION => 'check_authentication';
+use constant ERROR                => 'error';
 
 1;
 

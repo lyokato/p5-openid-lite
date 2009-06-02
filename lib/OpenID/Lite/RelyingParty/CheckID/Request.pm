@@ -1,4 +1,4 @@
-package OpenID::Lite::RelyingParty::CheckIDRequest;
+package OpenID::Lite::RelyingParty::CheckID::Request;
 
 use Any::Moose;
 use URI;
@@ -78,17 +78,19 @@ sub gen_params {
     }
 
     # identity setting
-    my ( $identity, $claimed_id );
-    if ( $self->service->is_op_identifier ) {
-        $identity = $claimed_id = IDENTIFIER_SELECT;
-    }
-    else {
-        $identity   = $self->service->find_local_identifier;
-        $claimed_id = $self->service->claimed_identifier;
-    }
-    $self->_set_param( identity => $identity );
-    unless ( $self->service->requires_compatibility_mode ) {
-        $self->_set_param( claimed_id => $claimed_id );
+    unless ( $self->anonymous ) {
+        my ( $identity, $claimed_id );
+        if ( $self->service->is_op_identifier ) {
+            $identity = $claimed_id = IDENTIFIER_SELECT;
+        }
+        else {
+            $identity   = $self->service->find_local_identifier;
+            $claimed_id = $self->service->claimed_identifier;
+        }
+        $self->_set_param( identity => $identity );
+        unless ( $self->service->requires_compatibility_mode ) {
+            $self->_set_param( claimed_id => $claimed_id );
+        }
     }
 
     # association setting
@@ -115,20 +117,3 @@ sub _build__params {
 no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
-
-=head1 NAME 
-
-=head1 SYNOPSIS
-
-    my $request = OpenID::Lite::RelyingParty::CheckIDRequest->new(
-        service     => $service,
-        association => $association,
-    );
-
-    my $url = $request->redirect_url(
-        realm     => $realm,
-        return_to => $return_to,
-        immediate => 1,
-    );
-
-=cut

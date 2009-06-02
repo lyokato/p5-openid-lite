@@ -25,6 +25,7 @@ sub verify {
     my ( $self, $secret, $params ) = @_;
     my $sig = $params->get('sig');
     return unless $sig;
+    $sig =~ s/ /+/g;
     my $signed = $self->sign($secret, $params);
     return unless $signed;
     return $sig eq $signed;

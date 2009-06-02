@@ -65,7 +65,7 @@ sub idres {
             type => IS_CANCELED,
         );
     }
-    elsif ( $mode eq q{error} ) {
+    elsif ( $mode eq ERROR ) {
         my $error     = $params->get('error')     || '';
         my $contact   = $params->get('contact')   || '';
         my $reference = $params->get('reference') || '';

@@ -25,11 +25,3 @@ no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 
-=head1 NAME 
-
-=head1 SYNOPSIS
-
-
-=cut
-
-

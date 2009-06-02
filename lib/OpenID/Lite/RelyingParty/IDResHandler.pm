@@ -8,6 +8,7 @@ use Params::Validate;
 use OpenID::Lite::RelyingParty::CheckID::Result;
 use OpenID::Lite::RelyingParty::IDResHandler::Verifier;
 use OpenID::Lite::Constants::ModeType qw(ID_RES SETUP_NEEDED CANCEL ERROR);
+use OpenID::Lite::Constants::CheckIDResponse qw(:all);
 
 has 'store' => (
     is => 'ro',
@@ -34,14 +35,14 @@ sub idres {
     my $mode = $params->get('mode');
     if ( !$mode ) {
         return OpenID::Lite::RelyingParty::CheckID::Result->new(
-            type    => q{not_openid},
+            type    => IS_NOT_OPENID,
             message => sprintf(q{Unknown mode, "%s"}, $mode),
         );
     }
     elsif ( $mode eq ID_RES ) {
         if ( $params->is_openid1 && $params->get('user_setup_url') ) {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
-                type => q{setup_needed},
+                type => IS_SETUP_NEEDED,
                 url  => $params->get('user_setup_url'),
             );
         }
@@ -54,14 +55,14 @@ sub idres {
     elsif ( $mode eq SETUP_NEEDED ) {
         unless ( $params->is_openid1 ) {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
-                type => q{setup_needed},
+                type => IS_SETUP_NEEDED,
                 url  => $params->get('user_setup_url') || '',
             );
         }
     }
     elsif ( $mode eq CANCEL ) {
         return OpenID::Lite::RelyingParty::CheckID::Result->new(
-            type => q{cancel},
+            type => IS_CANCELED,
         );
     }
     elsif ( $mode eq q{error} ) {
@@ -69,14 +70,14 @@ sub idres {
         my $contact   = $params->get('contact')   || '';
         my $reference = $params->get('reference') || '';
         return OpenID::Lite::RelyingParty::CheckID::Result->new(
-            type      => q{error},
+            type      => IS_ERROR,
             message   => $error,
             contact   => $contact,
             reference => $reference,
         );
     }
     return OpenID::Lite::RelyingParty::CheckID::Result->new(
-        type    => q{error},
+        type    => IS_INVALID,
         message => sprintf(q{Unknown mode, "%s"}, $mode),
     );
 }

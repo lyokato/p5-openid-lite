@@ -3,6 +3,7 @@ package OpenID::Lite::RelyingParty::CheckID::Result;
 use Any::Moose;
 use OpenID::Lite::Constants::CheckIDResponse qw(:all);
 
+# common properties
 has 'type' => (
     is       => 'ro',
     isa      => 'Str',
@@ -16,15 +17,34 @@ has 'message' => (
 );
 
 # used under error status
-has 'contact' => ();
-has 'reference' => ();
+has 'contact' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => '',
+);
 
+has 'reference' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => '',
+);
 
 # used under setup_needed status
 has 'url' => (
+    is        => 'ro',
+    isa       => 'Str',
+    predicate => 'has_url',
+);
+
+# used under successful status
+has 'claimed_identifier' => (
     is  => 'ro',
     isa => 'Str',
-    predicate => 'has_url',
+);
+
+has 'identity' => (
+    is  => 'ro',
+    isa => 'Str',
 );
 
 sub is_invalid {

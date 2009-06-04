@@ -11,7 +11,6 @@ use OpenID::Lite::RelyingParty::CheckID::Request;
 use OpenID::Lite::RelyingParty::IDResHandler;
 use OpenID::Lite::RelyingParty::Store::OnMemory;
 
-use Data::Util qw(:check);
 use URI;
 use Params::Validate qw(HASHREF);
 

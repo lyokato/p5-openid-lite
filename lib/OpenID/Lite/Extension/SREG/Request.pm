@@ -4,6 +4,8 @@ use Any::Moose;
 use List::MoreUtils qw(any none);
 use Carp ();
 
+extends 'OpenID::Lite::Extension::Request';
+
 has '_required' => (
     is      => 'ro',
     isa     => 'ArrayRef',
@@ -37,12 +39,12 @@ use constant SREG_NS_1_0   => q{http://openid.net/sreg/1.0};
 use constant SREG_NS_1_1   => q{http://openid.net/extensions/sreg/1.1};
 use constant SREG_NS_ALIAS => q{sreg};
 
-sub append_params {
+override 'append_to_params' => sub {
     my ( $self, $params ) = @_;
     $params->register_extension_namespace( SREG_NS_ALIAS, SREG_NS_1_1 );
 
     my $required = $self->_required;
-    $params->set_extension( SREG_NS_ALIAS, 'requried',
+    $params->set_extension( SREG_NS_ALIAS, 'required',
         join( ',', @$required ) )
         if @$required > 0;
     my $optional = $self->_optional;
@@ -51,7 +53,7 @@ sub append_params {
         if @$optional > 0;
     $params->set_extension( SREG_NS_ALIAS, 'policy_url', $self->policy_url )
         if $self->policy_url;
-}
+};
 
 sub check_field_name {
     my ( $self, $field_name ) = @_;

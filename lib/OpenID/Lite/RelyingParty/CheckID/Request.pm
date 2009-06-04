@@ -70,8 +70,8 @@ sub gen_params {
         my $return_to = URI->new( $args{return_to} );
         if ( $self->service->requires_compatibility_mode ) {
             $return_to->query_form(
-                rp_nonce   => OpenID::Lite::Nonce->gen_nonce(),
-                claimed_id => $self->service->claimed_identifier,
+                rp_nonce           => OpenID::Lite::Nonce->gen_nonce(),
+                openid1_claimed_id => $self->service->claimed_identifier,
             );
         }
         $self->_set_param( return_to => $return_to->as_string );

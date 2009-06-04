@@ -76,7 +76,7 @@ sub handle_request {
         dumb     => 0,
     );
 
-#my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
+    #my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
 
     my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns           => $req_params->ns );

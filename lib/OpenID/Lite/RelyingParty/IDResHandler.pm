@@ -11,7 +11,8 @@ use OpenID::Lite::Constants::ModeType qw(ID_RES SETUP_NEEDED CANCEL ERROR);
 use OpenID::Lite::Constants::CheckIDResponse qw(:all);
 
 has 'store' => (
-    is => 'ro',
+    is   => 'ro',
+    does => 'OpenID::Lite::Role::Storable',
 );
 
 sub idres {

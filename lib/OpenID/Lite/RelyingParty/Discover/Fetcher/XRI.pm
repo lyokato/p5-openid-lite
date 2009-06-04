@@ -10,9 +10,8 @@ has 'proxy_url' => (
 );
 
 use XRI::Resolution::Lite;
-use OpenID::Lite::Relyingparty::Discover::FetchResult;
-use OpenID::Lite::Constants::Yadis qw(XRDS_CONTENT_TYPE);
 use OpenID::Lite::RelyingParty::Discover::FetchResult;
+use OpenID::Lite::Constants::Yadis qw(XRDS_CONTENT_TYPE);
 
 sub fetch {
     my ( $self, $iname, $option ) = @_;

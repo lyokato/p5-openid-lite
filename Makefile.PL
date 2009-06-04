@@ -26,7 +26,7 @@ requires(
     'Digest::SHA'                => 0,
     'URI'                        => 0,
     'Data::Dump'                 => 0,
-    'LWPx::UserAgent'            => 0,
+    'LWP::UserAgent'             => 0,
     'Time::Local'                => 0,
     'Params::Validate'           => 0,
 );

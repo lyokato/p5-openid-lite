@@ -271,7 +271,7 @@ sub _check_nonce {
     }
     elsif ( $self->params->is_openid2 ) {
         $nonce = $self->params->get('response_nonce');
-        $server_url = $self->has_server ? $self->server->url : undef;
+        $server_url = $self->has_service ? $self->service->url : undef;
     }
     else {
         return $self->ERROR(q{IdRes Response doesn't have proper ns value.});

@@ -11,7 +11,7 @@ override 'hmac_hash' => sub {
 
 override 'hmac_hash_hex' => sub {
     my ( $self, $secret, $key ) = @_;
-    return Digest::SHA::hmac_sha256( $key, $secret );
+    return Digest::SHA::hmac_sha256_hex( $key, $secret );
 };
 
 no Any::Moose;

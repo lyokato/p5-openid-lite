@@ -28,8 +28,8 @@ requires:
   HTML::TreeBuilder: 0
   HTML::TreeBuilder::XPath: 0.09
   HTTP::Request: 0
+  LWP::UserAgent: 0
   LWPx::ParanoidAgent: 1.04
-  LWPx::UserAgent: 0
   List::MoreUtils: 0
   Mouse: 0.17
   MouseX::Types: 0.01

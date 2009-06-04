@@ -62,7 +62,7 @@ sub begin {
 sub begin_without_discovery {
     my ( $self, $service, $anonymous ) = @_;
 
-    my $association = $self->associate($service);
+    my $association = $self->associate($service) or return;
 
     #return unless $association;
 

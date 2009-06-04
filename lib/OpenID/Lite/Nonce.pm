@@ -5,7 +5,6 @@ use warnings;
 
 use String::Random;
 use POSIX;
-use DateTime::Format::Strptime;
 use Time::Local;
 
 my $SKEW = 60 * 60 * 5;
@@ -26,14 +25,15 @@ sub split_nonce {
     my $pos       = length(q{0000-00-00T00:00:00Z});
     my $timestamp = substr( $nonce, 0, $pos );
     return if length($timestamp) < $pos;
-    return unless $timestamp =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+    return unless $timestamp =~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$/;
 
-    #my $time = timegm( POSIX::strptime( $timestamp, q{%FT%TZ} ) );
     my $time;
     eval {
-        $time
-            = DateTime::Format::Strptime::strptime( q{%FT%TZ}, $timestamp )
-            ->epoch();
+        #$time = timegm( POSIX::strptime( $timestamp, q{%FT%TZ} ) );
+        #$time
+        #    = DateTime::Format::Strptime::strptime( q{%FT%TZ}, $timestamp )
+        #    ->epoch();
+        $time = Time::Local::timegm($6, $5, $4, $3, $2 - 1, $1);
     };
     if ($@) {
         return;

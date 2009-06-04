@@ -20,7 +20,7 @@ requires(
     'Crypt::DH::GMP'             => '0.00005',
     'Crypt::SSLeay'              => 0,
     'URI::Escape'                => 0,
-    'DateTime::Format::Strptime' => 0,
+#    'DateTime::Format::Strptime' => 0,
     'Storable'                   => 0,
     'List::MoreUtils'            => 0,
     'Digest::SHA'                => 0,

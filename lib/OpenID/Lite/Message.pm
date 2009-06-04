@@ -106,7 +106,7 @@ sub from_key_value {
     my ( $class, $body ) = @_;
     my $params = $class->new;
     for my $line ( split /\n/, $body ) {
-        my ( $key, $value ) = split /\:/, $line;
+        my ($key, $value) = split /:/, $line, 2;
         $params->set( $key, $value );
     }
     return $params;

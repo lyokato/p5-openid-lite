@@ -12,7 +12,7 @@ use OpenID::Lite::RelyingParty::Associator;
 use OpenID::Lite::RelyingParty::Associator::ParamBuilder;
 use OpenID::Lite::Constants::AssocType qw(:all);
 use OpenID::Lite::Constants::SessionType qw(:all);
-use OpenID::Lite::RelyingParty::CheckIDRequest;
+use OpenID::Lite::RelyingParty::CheckID::Request;
 use OpenID::Lite::Extension::SREG::Request;
 use OpenID::Lite::Agent::Dump;
 
@@ -43,7 +43,7 @@ say sprintf q{ASSOC_HANDLE: %s}, $association->handle;
 say sprintf q{EXPIRATION:   %s}, $association->expires_at;
 say sprintf q{SECRET:       %s}, MIME::Base64::encode_base64($association->secret);
 
-my $req = OpenID::Lite::RelyingParty::CheckIDRequest->new(
+my $req = OpenID::Lite::RelyingParty::CheckID::Request->new(
     service     => $service,
     association => $association,
 );

@@ -12,7 +12,7 @@ use OpenID::Lite::RelyingParty::IDResHandler;
 use OpenID::Lite::RelyingParty::Store::OnMemory;
 
 use URI;
-use Params::Validate qw(HASHREF);
+use Params::Validate;
 
 has '_discoverer' => (
     is         => 'ro',

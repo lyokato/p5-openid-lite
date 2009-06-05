@@ -50,8 +50,16 @@ sub idres {
         $args{agent} = $self->agent;
         $args{store} = $self->store if $self->store;
         my $verifier = OpenID::Lite::RelyingParty::IDResHandler::Verifier->new(%args);
-        my $result = $verifier->verify();
-        return $result;
+        if ( $verifier->verify() ) {
+            return OpenID::Lite::RelyingParty::CheckID::Result->new(
+                type => IS_SUCCESS,
+            );
+        } else {
+            return OpenID::Lite::RelyingParty::CheckID::Result->new(
+                type    => IS_INVALID,
+                message => $verifier->errstr,
+            );
+        };
     }
     elsif ( $mode eq SETUP_NEEDED ) {
         unless ( $params->is_openid1 ) {

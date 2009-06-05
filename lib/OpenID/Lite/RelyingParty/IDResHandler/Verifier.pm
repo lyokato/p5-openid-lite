@@ -5,10 +5,10 @@ use URI;
 use List::MoreUtils qw(any);
 use OpenID::Lite::Nonce;
 use OpenID::Lite::Util::URI;
-use OpenID::Lite::RelyingParty::CheckID::Result;
 use OpenID::Lite::SignatureMethods;
 use OpenID::Lite::RelyingParty::DirectCommunication;
-use OpenID::Lite::Constants::Namespace qw(SIGNON_1_1 SIGNON_1_0 SIGNON_2_0 SERVER_2_0);
+use OpenID::Lite::Constants::Namespace
+    qw(SIGNON_1_1 SIGNON_1_0 SIGNON_2_0 SERVER_2_0);
 use OpenID::Lite::Constants::ModeType qw(CHECK_AUTHENTICATION);
 
 has 'params' => (
@@ -52,28 +52,14 @@ my @OP2_SIG_FIELDS = qw(return_to response_nonce assoc_handle);
 
 sub verify {
     my $self = shift;
-    $self->_check_for_fields()         or return $self->_error();
-    $self->_verify_return_to()         or return $self->_error();
-    #$self->_verify_discovery_results() or return $self->_error();
-    $self->_check_nonce()              or return $self->_error();
-    $self->_check_signature()          or return $self->_error();
+    $self->_check_for_fields() or return;
+    $self->_verify_return_to() or return;
 
-    my $result = OpenID::Lite::RelyingParty::CheckID::Result->new(
-        type    => q{success},
-        message => q{success},
-    );
-    return $result;
-}
+    #$self->_verify_discovery_results() or return;
+    $self->_check_nonce()     or return;
+    $self->_check_signature() or return;
 
-sub _error {
-    my ( $self, $msg ) = @_;
-    $msg ||= $self->errstr;
-    $msg ||= '';
-    my $result = OpenID::Lite::RelyingParty::CheckID::Result->new(
-        type => q{invalid},
-        message => $msg,
-    );
-    return $result
+    return 1;
 }
 
 sub _check_for_fields {
@@ -224,43 +210,46 @@ sub _verify_discovery_results_openid2 {
     my $self = shift;
 
     my $to_match = OpenID::Lite::RelyingParty::Discover::Service->new;
-    $to_match->add_type( SIGNON_2_0 );
+    $to_match->add_type(SIGNON_2_0);
     $to_match->add_uri( $self->params->get('op_endpoint') );
 
     # claimed_id && identity both or none?
     my $claimed_id = $self->params->get('claimed_id');
     my $identity   = $self->params->get('identity');
 
-    $to_match->claimed_identifier( $claimed_id );
-    $to_match->op_local_identifier( $identity );
+    $to_match->claimed_identifier($claimed_id);
+    $to_match->op_local_identifier($identity);
 
     if ( $claimed_id && !$identity ) {
-        return $self->ERROR(q{openid.claimed_id is present without openid.identity});
+        return $self->ERROR(
+            q{openid.claimed_id is present without openid.identity});
     }
     elsif ( !$claimed_id && $identity ) {
-        return $self->ERROR(q{openid.identity is present without openid.claimed_id});
+        return $self->ERROR(
+            q{openid.identity is present without openid.claimed_id});
     }
     elsif ( !$claimed_id ) {
 
         # if no claimed_id
         my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
-        $service->add_type( SERVER_2_0 );
+        $service->add_type(SERVER_2_0);
         $service->add_uri( $self->params->get('op_endpoint') );
         $self->service($service);
         return;
     }
 
     if ( $self->has_service ) {
-        $self->_verify_discovery_single($self->service, $to_match)
-            or $self->_discover_and_verify($claimed_id, [$to_match])
+        $self->_verify_discovery_single( $self->service, $to_match )
+            or $self->_discover_and_verify( $claimed_id, [$to_match] )
             or return;
     }
     else {
-        $self->_discover_and_verify($claimed_id, [$to_match])
+        $self->_discover_and_verify( $claimed_id, [$to_match] )
             or return;
     }
 
-    if ( $self->service->claimed_identifier ne $to_match->claimed_identifier ) {
+    if ( $self->service->claimed_identifier ne $to_match->claimed_identifier )
+    {
         $self->service->claimed_identifier( $to_match->claimed_identifier );
     }
 }
@@ -324,8 +313,7 @@ sub _check_signature {
 
     if ( $self->store ) {
         my $assoc_handle = $self->params->get('assoc_handle');
-        $assoc
-            = $self->store->get_association( $server_url, $assoc_handle );
+        $assoc = $self->store->get_association( $server_url, $assoc_handle );
     }
 
     if ( !$assoc ) {
@@ -355,13 +343,13 @@ sub _check_auth {
     my $server_url = $self->service->url;
     my $res_params
         = $self->_direct_communication->send_request( $server_url, $params );
-    $self->_process_check_auth_response($res_params);
+    return $self->_process_check_auth_response($res_params);
 }
 
 sub _process_check_auth_response {
     my ( $self, $res_params ) = @_;
-    my $is_valid          = $self->params->get('is_valid') || 'false';
-    my $invalidate_handle = $self->params->get('invalidate_handle');
+    my $is_valid          = $res_params->get('is_valid') || 'false';
+    my $invalidate_handle = $res_params->get('invalidate_handle');
     my $server_url        = $self->service->url;
     if ($invalidate_handle) {
         if ( $self->store ) {
@@ -377,17 +365,11 @@ sub _process_check_auth_response {
             $server_url,
         );
     }
+    return 1;
 }
 
 sub _create_check_auth_request {
     my $self = shift;
-
-    # XXX fixme
-    #my @signed_list = split( /,/, $self->params->get('signed') );
-    #for my $k (@signed_list) {
-    #    #$self->params->get_aliased_arg($k);
-    #}
-
     my $ca_message = $self->params->copy();
     $ca_message->set( mode => CHECK_AUTHENTICATION );
     return $ca_message;

@@ -20,7 +20,6 @@ requires(
     'Crypt::DH::GMP'             => '0.00005',
     'Crypt::SSLeay'              => 0,
     'URI::Escape'                => 0,
-#    'DateTime::Format::Strptime' => 0,
     'Storable'                   => 0,
     'List::MoreUtils'            => 0,
     'Digest::SHA'                => 0,
@@ -29,6 +28,7 @@ requires(
     'LWP::UserAgent'             => 0,
     'Time::Local'                => 0,
     'Params::Validate'           => 0,
+    'Math::BigInt'               => 0,
 );
 
 tests('t/*.t t/*/*.t');

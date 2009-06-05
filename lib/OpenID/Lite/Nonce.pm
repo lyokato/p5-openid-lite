@@ -26,18 +26,9 @@ sub split_nonce {
     my $timestamp = substr( $nonce, 0, $pos );
     return if length($timestamp) < $pos;
     return unless $timestamp =~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$/;
-
     my $time;
-    eval {
-        #$time = timegm( POSIX::strptime( $timestamp, q{%FT%TZ} ) );
-        #$time
-        #    = DateTime::Format::Strptime::strptime( q{%FT%TZ}, $timestamp )
-        #    ->epoch();
-        $time = Time::Local::timegm($6, $5, $4, $3, $2 - 1, $1);
-    };
-    if ($@) {
-        return;
-    }
+    eval { $time = Time::Local::timegm($6, $5, $4, $3, $2 - 1, $1); };
+    if ($@) { return; }
     my $rest = substr( $nonce, $pos );
     return ( $time, $rest );
 }

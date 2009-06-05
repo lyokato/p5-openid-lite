@@ -37,18 +37,6 @@ has 'issued' => (
     required => 1,
 );
 
-sub get_secret_size {
-    my $class      = shift;
-    my $assoc_type = shift;
-    if ( $assoc_type eq HMAC_SHA1 ) {
-        return 20;
-    }
-    elsif ( $assoc_type eq HMAC_SHA256 ) {
-        return 32;
-    }
-    return;
-}
-
 sub copy {
     my $self = shift;
     return ref($self)->new(

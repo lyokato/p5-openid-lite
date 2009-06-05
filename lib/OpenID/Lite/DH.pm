@@ -59,9 +59,9 @@ sub arg2bi {
 
 sub bi2bytes {
     my ( $self, $bigint ) = @_;
-    die "" if $bigint->is_negative;
+    die if $bigint->is_negative;
     my $bits = $bigint->as_bin;
-    die "" unless $bits =~ s/^0b//;
+    die unless $bits =~ s/^0b//;
     my $prepend = (8 - length($bits) % 8) || ($bits =~ /^1/ ? 8 : 0);
     $bits = ("0" x $prepend) . $bits if $prepend;
     return pack("B*", $bits);

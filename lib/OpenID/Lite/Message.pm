@@ -49,6 +49,11 @@ sub get {
     }
 }
 
+sub has_key {
+    my ( $self, $key ) = @_;
+    return exists $self->{_params}{$key};
+}
+
 sub get_extension {
     my ( $self, $ext_name, $key ) = @_;
     return (   exists $self->{_extension_params}{$ext_name}

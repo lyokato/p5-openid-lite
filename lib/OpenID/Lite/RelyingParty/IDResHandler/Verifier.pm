@@ -5,6 +5,7 @@ use URI;
 use List::MoreUtils qw(any);
 use OpenID::Lite::Nonce;
 use OpenID::Lite::Util::URI;
+use OpenID::Lite::RelyingParty::CheckID::Result;
 use OpenID::Lite::SignatureMethods;
 use OpenID::Lite::RelyingParty::DirectCommunication;
 use OpenID::Lite::Constants::Namespace qw(SIGNON_1_1 SIGNON_1_0 SIGNON_2_0 SERVER_2_0);
@@ -35,8 +36,9 @@ has 'store' => (
 );
 
 has '_direct_communication' => (
-    is  => 'ro',
-    isa => 'OpenID::Lite::RelyingParty::DirectCommunication',
+    is         => 'ro',
+    isa        => 'OpenID::Lite::RelyingParty::DirectCommunication',
+    lazy_build => 1,
 );
 
 with 'OpenID::Lite::Role::AgentHandler';
@@ -49,13 +51,29 @@ my @OP2_FIELDS     = qw(return_to assoc_handle sig signed op_endpoint);
 my @OP2_SIG_FIELDS = qw(return_to response_nonce assoc_handle);
 
 sub verify {
-    my $self = @_;
-    $self->_check_for_fields()         or return;
-    $self->_verify_return_to()         or return;
-    $self->_verify_discovery_results() or return;
-    $self->_check_nonce()              or return;
-    $self->_check_signature()          or return;
-    return 1;
+    my $self = shift;
+    $self->_check_for_fields()         or return $self->_error();
+    $self->_verify_return_to()         or return $self->_error();
+    #$self->_verify_discovery_results() or return $self->_error();
+    $self->_check_nonce()              or return $self->_error();
+    $self->_check_signature()          or return $self->_error();
+
+    my $result = OpenID::Lite::RelyingParty::CheckID::Result->new(
+        type    => q{success},
+        message => q{success},
+    );
+    return $result;
+}
+
+sub _error {
+    my ( $self, $msg ) = @_;
+    $msg ||= $self->errstr;
+    $msg ||= '';
+    my $result = OpenID::Lite::RelyingParty::CheckID::Result->new(
+        type => q{invalid},
+        message => $msg,
+    );
+    return $result
 }
 
 sub _check_for_fields {
@@ -87,6 +105,7 @@ sub _check_for_fields {
             return $self->ERROR( sprintf q{"%s" key not found}, $field );
         }
     }
+    return 1;
 }
 
 sub _verify_return_to {
@@ -206,7 +225,7 @@ sub _verify_discovery_results_openid2 {
 
     my $to_match = OpenID::Lite::RelyingParty::Discover::Service->new;
     $to_match->add_type( SIGNON_2_0 );
-    $to_match->add_url( $self->params->get('op_endpoint') );
+    $to_match->add_uri( $self->params->get('op_endpoint') );
 
     # claimed_id && identity both or none?
     my $claimed_id = $self->params->get('claimed_id');
@@ -226,7 +245,7 @@ sub _verify_discovery_results_openid2 {
         # if no claimed_id
         my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
         $service->add_type( SERVER_2_0 );
-        $service->add_url( $self->params->get('op_endpoint') );
+        $service->add_uri( $self->params->get('op_endpoint') );
         $self->service($service);
         return;
     }
@@ -305,11 +324,11 @@ sub _check_signature {
 
     if ( $self->store ) {
         my $assoc_handle = $self->params->get('assoc_handle');
-        my $assoc
+        $assoc
             = $self->store->get_association( $server_url, $assoc_handle );
     }
 
-    if ($assoc) {
+    if ( !$assoc ) {
         return $self->_check_auth();
     }
     else {
@@ -335,7 +354,7 @@ sub _check_auth {
         or return;
     my $server_url = $self->service->url;
     my $res_params
-        = $self->direct_communication->send_request( $server_url, $params );
+        = $self->_direct_communication->send_request( $server_url, $params );
     $self->_process_check_auth_response($res_params);
 }
 
@@ -366,7 +385,6 @@ sub _create_check_auth_request {
     # XXX fixme
     #my @signed_list = split( /,/, $self->params->get('signed') );
     #for my $k (@signed_list) {
-
     #    #$self->params->get_aliased_arg($k);
     #}
 

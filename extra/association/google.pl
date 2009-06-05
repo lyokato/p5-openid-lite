@@ -27,11 +27,11 @@ my $service = OpenID::Lite::RelyingParty::Discover::Service->new(
     uris => ["https://www.google.com/accounts/o8/ud?source=gmail"],
 );
 my $assoc = OpenID::Lite::RelyingParty::Associator->new(
-    #assoc_type => HMAC_SHA256,
-    assoc_type   => HMAC_SHA1,
+    assoc_type => HMAC_SHA256,
+    #assoc_type   => HMAC_SHA1,
     #session_type => NO_ENCRYPTION,
-    session_type => DH_SHA1,
-    #session_type => DH_SHA256,
+    #session_type => DH_SHA1,
+    session_type => DH_SHA256,
 );
 my $association = $assoc->associate($service)
     or die $assoc->errstr;

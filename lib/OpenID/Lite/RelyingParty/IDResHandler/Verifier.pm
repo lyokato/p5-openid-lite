@@ -5,10 +5,13 @@ use URI;
 use List::MoreUtils qw(any);
 use OpenID::Lite::Nonce;
 use OpenID::Lite::Util::URI;
+use OpenID::Lite::Util::XRI;
 use OpenID::Lite::SignatureMethods;
 use OpenID::Lite::RelyingParty::DirectCommunication;
+use OpenID::Lite::RelyingParty::Discover;
+use OpenID::Lite::RelyingParty::Discover::Service;
 use OpenID::Lite::Constants::Namespace
-    qw(SIGNON_1_1 SIGNON_1_0 SIGNON_2_0 SERVER_2_0);
+    qw(SPEC_1_0 SPEC_2_0 SIGNON_1_1 SIGNON_1_0 SIGNON_2_0 SERVER_2_0);
 use OpenID::Lite::Constants::ModeType qw(CHECK_AUTHENTICATION);
 
 has 'params' => (
@@ -33,6 +36,11 @@ has 'store' => (
     is => 'ro',
 
     #does => 'OpenID::Lite::Role::Storable',
+);
+
+has '_discoverer' => (
+    is         => 'ro',
+    lazy_build => 1,
 );
 
 has '_direct_communication' => (
@@ -158,17 +166,90 @@ sub _verify_return_to_base {
 }
 
 sub _verify_discovery_single {
-    my ( $self, ) = @_;
+    my ( $self, $endpoint, $to_match ) = @_;
+
+    for my $type_uri ( @{ $to_match->types } ) {
+        return $self->ERROR(q{Type uri mismatch.})
+            unless $endpoint->has_type($type_uri);
+    }
+
+    my $defragged_claimed_id;
+    my $scheme = OpenID::Lite::Util::XRI->identifier_scheme(
+        $to_match->claimed_identifier );
+    if ( $scheme eq 'xri' ) {
+        $defragged_claimed_id = $to_match->claimed_identifier;
+    }
+    elsif ( $scheme eq 'uri' ) {
+        if (OpenID::Lite::Util::URI->is_uri( $to_match->claimed_identifier ) )
+        {
+            my $parsed = URI->new( $to_match->claimed_identifier );
+            $parsed->fragment(undef);
+            $defragged_claimed_id = $parsed->as_string;
+        }
+        else {
+            $defragged_claimed_id = $to_match->claimed_identifier;
+        }
+    }
+    else {
+        return $self->ERROR(
+            sprintf q{Invalid claimed_id, "%s"},
+            $to_match->claimed_identifier || ''
+        );
+    }
+
+    if ( $defragged_claimed_id ne $endpoint->claimed_identifier ) {
+        return $self->ERROR(
+            sprintf q{Claimed IDs don't match, "%s" and "%s" },
+            $defragged_claimed_id, $endpoint->claimed_identifier );
+    }
+
+    if ($endpoint->find_local_identifier ne $to_match->find_local_identifier )
+    {
+        return $self->ERROR(
+            sprintf q{Local IDs don't match, "%s" and "%s" },
+            $to_match->find_local_identifier,
+            $endpoint->find_local_identifier
+        );
+    }
+
+    if ( !$to_match->url ) {
+        if ( $to_match->preferred_namespace ne SPEC_1_0 ) {
+            return $self->ERROR(
+                q{ensure that endpoint is openid2.0 without openid.op_endpoint?}
+            );
+        }
+    }
+    elsif ( $endpoint->url ne $to_match->url ) {
+        return $self->ERROR( sprintf q{OP endpoint mismatch, "%s" and "%s"},
+            $endpoint->url, $to_match->url );
+    }
+
+    return 1;
 }
 
 sub _verify_discovered_services {
     my ( $self, $claimed_id, $services, $to_match_endpoints ) = @_;
+
+    my @failure_messages;
+    for my $service ( @$services ) {
+        for my $to_match ( @$to_match_endpoints ) {
+            if ( $self->_verify_discovery_single($service, $to_match) ) {
+                $self->service($service);
+                return 1;
+            } else {
+                push(@failure_messages, $self->errstr);
+                $self->ERROR(undef);
+            }
+        }
+    }
+    return $self->ERROR(
+        sprintf q{No matching endpoint found for claimed_id "%s".}, $claimed_id);
 }
 
 sub _discover_and_verify {
     my ( $self, $claimed_id, $to_match_endpoints ) = @_;
-    my $services = $self->_discover->discover($claimed_id)
-        or return $self->ERROR( $self->_discover->errstr );
+    my $services = $self->_discoverer->discover($claimed_id)
+        or return $self->ERROR( $self->_discoverer->errstr );
     unless ( @$services > 0 ) {
         return $self->ERROR( sprintf q{No OpenID information found at %s},
             $claimed_id );
@@ -230,12 +311,11 @@ sub _verify_discovery_results_openid2 {
     }
     elsif ( !$claimed_id ) {
 
-        # if no claimed_id
         my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
         $service->add_type(SERVER_2_0);
         $service->add_uri( $self->params->get('op_endpoint') );
         $self->service($service);
-        return;
+        return 1;
     }
 
     if ( $self->has_service ) {
@@ -250,8 +330,12 @@ sub _verify_discovery_results_openid2 {
 
     if ( $self->service->claimed_identifier ne $to_match->claimed_identifier )
     {
-        $self->service->claimed_identifier( $to_match->claimed_identifier );
+        my $copied = $self->service->copy();
+        $copied->claimed_identifier( $to_match->claimed_identifier );
+        $self->service($copied);
     }
+
+    return 1;
 }
 
 sub _verify_discovery_results {
@@ -369,11 +453,17 @@ sub _process_check_auth_response {
 }
 
 sub _create_check_auth_request {
-    my $self = shift;
+    my $self       = shift;
     my $ca_message = $self->params->copy();
     $ca_message->set( mode => CHECK_AUTHENTICATION );
     return $ca_message;
 
+}
+
+sub _build__discoverer {
+    my $self = shift;
+    return OpenID::Lite::RelyingParty::Discover->new(
+        agent => $self->agent, );
 }
 
 sub _build__direct_communication {

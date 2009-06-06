@@ -27,6 +27,7 @@ requires:
   LWP::UserAgent: 0
   LWPx::ParanoidAgent: 1.04
   List::MoreUtils: 0
+  Math::BigInt: 0
   Mouse: 0.17
   MouseX::Types: 0.01
   Params::Validate: 0

@@ -19,7 +19,7 @@ use OpenID::Lite::Constants::ModeType
 do {
     subtype AssocHandle,
         as 'Str',
-        where { $_ =~ /^[\x21-\x7e]{1,255}$/ }; # TODO ASCII check
+        where { $_ =~ /^[\x21-\x7e]{1,255}$/ };
 };
 
 do {

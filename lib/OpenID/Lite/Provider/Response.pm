@@ -1,6 +1,7 @@
 package OpenID::Lite::Provider::Response;
 
 use Any::Moose;
+use Carp ();
 
 has 'type' => (
     is       => 'ro',

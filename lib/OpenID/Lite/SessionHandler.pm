@@ -3,10 +3,11 @@ package OpenID::Lite::SessionHandler;
 use Any::Moose;
 with 'OpenID::Lite::Role::ErrorHandler';
 use List::MoreUtils qw(any);
+use OpenID::Lite::Types qw(SessionType);
 
 has '_session_type' => (
     is      => 'ro',
-    isa     => 'Str',
+    isa     => SessionType,
     default => "",
 );
 

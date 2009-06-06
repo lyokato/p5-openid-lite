@@ -58,7 +58,7 @@ sub find_local_identifier {
 sub url {
     my $self = shift;
     my $uris = $self->uris;
-    return $uris->[0];
+    return $uris->[0] || '';
 }
 
 sub is_op_identifier {
@@ -76,6 +76,11 @@ sub requires_compatibility_mode {
     my $self  = shift;
     my $types = $self->types;
     return ( none { $_ eq SERVER_2_0 || $_ eq SIGNON_2_0 } @$types );
+}
+
+sub has_uri {
+    my ( $self, $uri ) = @_;
+    return ( any { $_ eq $uri } @{ $self->uris } );
 }
 
 sub add_uri {
@@ -105,6 +110,11 @@ sub add_type {
 sub add_types {
     my $self = shift;
     $self->add_type($_) for @_;
+}
+
+sub has_type {
+    my ( $self, $type ) = @_;
+    return ( any { $_ eq $type } @{ $self->types } );
 }
 
 no Any::Moose;

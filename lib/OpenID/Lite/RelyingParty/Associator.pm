@@ -7,6 +7,7 @@ with 'OpenID::Lite::Role::Associator';
 
 use OpenID::Lite::SessionHandlers;
 use OpenID::Lite::RelyingParty::Associator::Base;
+use Carp ();
 
 sub associate {
     my ( $self, $service ) = @_;

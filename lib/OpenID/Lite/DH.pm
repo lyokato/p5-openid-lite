@@ -4,6 +4,7 @@ use Any::Moose;
 use Math::BigInt;
 use Crypt::DH::GMP;
 use MIME::Base64;
+use Carp ();
 
 has 'p' => (
     is  => 'ro',

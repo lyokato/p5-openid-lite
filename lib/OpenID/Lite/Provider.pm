@@ -2,6 +2,7 @@ package OpenID::Lite::Provider;
 
 use Any::Moose;
 use OpenID::Lite::Message;
+use OpenID::Lite::Realm;
 use OpenID::Lite::Provider::Discover;
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
@@ -22,9 +23,13 @@ sub _build_request_params {
     return $params;
 }
 
-sub rp_discover {
+sub discover_rp {
     my ( $self, $rp_realm ) = @_;
-    my $return_to_urls = $self->_discover->discover($rp_realm)
+    unless ( ref($rp_realm) eq 'OpenID::Lite::Realm' ) {
+        $rp_realm = OpenID::Lite::Realm->parse($rp_realm)
+            or return $self->ERROR(sprintf q{Invalid realm "%s"}, $rp_realm);
+    }
+    my $return_to_urls = $self->_discover->discover($rp_realm->build_discovery_url)
         or return $self->ERROR( $self->_discover->errstr );
     return $return_to_urls;
 }

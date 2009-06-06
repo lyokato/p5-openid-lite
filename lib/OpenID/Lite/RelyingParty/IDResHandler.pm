@@ -37,14 +37,16 @@ sub idres {
     if ( !$mode ) {
         return OpenID::Lite::RelyingParty::CheckID::Result->new(
             type    => IS_NOT_OPENID,
+            params  => $params,
             message => sprintf(q{Unknown mode, "%s"}, $mode),
         );
     }
     elsif ( $mode eq ID_RES ) {
         if ( $params->is_openid1 && $params->get('user_setup_url') ) {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
-                type => IS_SETUP_NEEDED,
-                url  => $params->get('user_setup_url'),
+                type   => IS_SETUP_NEEDED,
+                params => $params,
+                url    => $params->get('user_setup_url'),
             );
         }
         $args{agent} = $self->agent;
@@ -52,11 +54,13 @@ sub idres {
         my $verifier = OpenID::Lite::RelyingParty::IDResHandler::Verifier->new(%args);
         if ( $verifier->verify() ) {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
-                type => IS_SUCCESS,
+                type   => IS_SUCCESS,
+                params => $params,
             );
         } else {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
                 type    => IS_INVALID,
+                params  => $params,
                 message => $verifier->errstr,
             );
         };
@@ -64,14 +68,16 @@ sub idres {
     elsif ( $mode eq SETUP_NEEDED ) {
         unless ( $params->is_openid1 ) {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
-                type => IS_SETUP_NEEDED,
-                url  => $params->get('user_setup_url') || '',
+                type   => IS_SETUP_NEEDED,
+                params => $params,
+                url    => $params->get('user_setup_url') || '',
             );
         }
     }
     elsif ( $mode eq CANCEL ) {
         return OpenID::Lite::RelyingParty::CheckID::Result->new(
-            type => IS_CANCELED,
+            type   => IS_CANCELED,
+            params => $params,
         );
     }
     elsif ( $mode eq ERROR ) {
@@ -83,10 +89,12 @@ sub idres {
             message   => $error,
             contact   => $contact,
             reference => $reference,
+            params    => $params,
         );
     }
     return OpenID::Lite::RelyingParty::CheckID::Result->new(
         type    => IS_INVALID,
+        params  => $params,
         message => sprintf(q{Unknown mode, "%s"}, $mode),
     );
 }

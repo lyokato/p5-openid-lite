@@ -10,6 +10,12 @@ has 'type' => (
     required => 1,
 );
 
+has 'params' => (
+    is       => 'ro',
+    isa      => 'OpenID::Lite::Message',
+    required => 1,
+);
+
 has 'message' => (
     is      => 'ro',
     isa     => 'Str',

@@ -6,6 +6,9 @@ use Storable ();
 use List::MoreUtils qw(any);
 
 use OpenID::Lite::Constants::Namespace qw(SIGNON_1_0 SIGNON_1_1 SPEC_2_0);
+use OpenID::Lite::Message::Decoder;
+
+my $REQUEST_DECODER = OpenID::Lite::Message::Decoder->new;
 
 sub new {
     my ( $class, %params ) = @_;
@@ -118,28 +121,8 @@ sub from_key_value {
 }
 
 sub from_request {
-    my ( $class, $hash ) = @_;
-    my $params = $class->new;
-    for my $key (%$hash) {
-        if ( $key =~ /^openid\.(.+)$/ ) {
-            $params->set( $1, $hash->{$key} );
-        }
-        elsif ( $key =~ /^openid\.(.+)\.(.+)$/ ) {
-            my $ext_name = $1;
-            my $ext_key  = $2;
-            if ( $ext_name eq 'ns' ) {
-                $params->register_extension_namespace( $ext_key,
-                    $hash->{$key} );
-            }
-            else {
-                $params->set_extension( $ext_name, $ext_key, $hash->{$key} );
-            }
-        }
-        else {
-            $params->set_extra( $key, $hash->{$key} );
-        }
-    }
-    return $params;
+    my ( $class, $request ) = @_;
+    return $REQUEST_DECODER->decode($request);
 }
 
 sub to_key_value {

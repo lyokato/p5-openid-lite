@@ -9,9 +9,11 @@ my %DECODERS;
 my %CLASS_PAIR = (
     'HASH'                  => 'OpenID::Lite::Message::Decoder::Hash',
     'CGI'                   => 'OpenID::Lite::Message::Decoder::CGI',
-    'Apache::Request'       => 'OpenID::Lite::Message::Decoder::Apache',
-    'Catalyst::Request'     => 'OpenID::Lite::Message::Decoder::Catalyst',
-    'HTTP::Engine::Request' => 'OpenID::Lite::Message::Decoder::HTTPEngine',
+    'Apache::Request'       => 'OpenID::Lite::Message::Decoder::CGI',
+    'Apache2::Request'      => 'OpenID::Lite::Message::Decoder::CGI',
+    'Catalyst::Request'     => 'OpenID::Lite::Message::Decoder::CGI',
+    'HTTP::Engine::Request' => 'OpenID::Lite::Message::Decoder::CGI',
+    'Apache'                => 'OpenID::Lite::Message::Decoder::Apache',
 );
 
 sub decode {

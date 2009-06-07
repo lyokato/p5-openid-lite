@@ -13,7 +13,6 @@ sub send_request {
     $req->header( 'Content-Type' => q{application/x-www-form-urlencoded} );
     $req->content( $params->to_post_body );
     my $res = $self->agent->request($req);
-    # TODO: SSL restriction
     if ($res->is_success) {
         my $params = OpenID::Lite::Message->from_key_value($res->content);
         return $params;

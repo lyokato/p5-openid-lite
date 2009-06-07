@@ -9,12 +9,13 @@ all_from 'lib/OpenID/Lite.pm';
 requires(
     'Mouse'                      => '0.17',
     'MouseX::Types'              => '0.01',
+    'Any::Moose'                 => '0.01',
     'XRI::Resolution::Lite'      => '0.02',
-    'HTML::TreeBuilder::XPath'   => '0.09',
     'LWPx::ParanoidAgent'        => '1.04',
     'HTTP::Request'              => 0,
     'HTML::Entities'             => 0,
     'HTML::TreeBuilder'          => 0,
+    'HTML::TreeBuilder::XPath'   => '0.09',
     'XML::LibXML'                => 0,
     'String::Random'             => 0,
     'Crypt::DH::GMP'             => '0.00005',
@@ -29,6 +30,7 @@ requires(
     'Time::Local'                => 0,
     'Params::Validate'           => 0,
     'Math::BigInt'               => 0,
+    'UNIVERSAL::require'         => 0,
 );
 
 tests('t/*.t t/*/*.t');

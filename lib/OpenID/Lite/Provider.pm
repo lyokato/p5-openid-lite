@@ -9,30 +9,25 @@ with 'OpenID::Lite::Role::AgentHandler';
 
 has '_discoverer' => (
     is         => 'ro',
+    isa        => 'OpenID::Lite::Provider::Discover',
     lazy_build => 1,
 );
 
 sub handle_request {
     my ( $self, $request ) = @_;
-    my $req_params = $self->_build_request_params($request);
-}
-
-sub _build_request_params {
-    my ( $self, $request ) = @_;
     my $params = OpenID::Lite::Message->from_request($request);
-    return $params;
 }
 
-sub make_rp_login_request_with_realm {
+sub make_rp_login_assertion_with_realm {
     my ( $self, $rp_realm ) = @_;
     my $urls = $self->discover_rp($rp_realm)
         or return;
     return $self->ERROR( sprintf q{url not found for realm, "%s"}, $rp_realm )
         unless @$urls > 0;
-    return $self->make_rp_login_request( $urls->[0] );
+    return $self->make_rp_login_assertion( $urls->[0] );
 }
 
-sub make_rp_login_request {
+sub make_rp_login_assertion {
     my ( $self, $url ) = @_;
 }
 

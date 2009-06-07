@@ -1,4 +1,4 @@
-package OpenID::Lite::Message::Decoder::HttpEngine;
+package OpenID::Lite::Message::Decoder::HTTPEngine;
 
 use Any::Moose;
 use OpenID::Lite::Message;

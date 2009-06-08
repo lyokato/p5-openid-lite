@@ -254,21 +254,23 @@ sub _discover_and_verify {
         return $self->ERROR( sprintf q{No OpenID information found at %s},
             $claimed_id );
     }
-    $self->_verify_discovered_services( $claimed_id, $services,
+    return $self->_verify_discovered_services( $claimed_id, $services,
         $to_match_endpoints );
 }
 
 sub _verify_discovery_results_openid1 {
     my $self       = shift;
-    my $claimed_id = $self->params->get_extra('openid1_claimed_id');
-    unless ($claimed_id) {
-        if ( $self->has_service ) {
 
-            # XXX check if service has claimed_id?
-            $claimed_id = $self->service->claimed_id;
+    my $claimed_id = $self->params->get_extra('openid1_claimed_id');
+
+    unless ($claimed_id) {
+        if ( $self->has_service && $self->service->claimed_identifier ) {
+            $claimed_id = $self->service->claimed_identifier;
         }
         else {
-            return $self->ERROR(q{XXX});
+            return $self->ERROR(q{When using OpenID 1, the claimed id must be supplied,
+                either by passing it through as a return_to parameter or by using a
+                session, and supplied to the IDResHandler when it is constructed.});
         }
     }
 
@@ -281,10 +283,15 @@ sub _verify_discovery_results_openid1 {
     $to_match_1_0->add_type(SIGNON_1_0);
 
     if ( $self->has_service ) {
-
+        my $verified = $self->_verify_discovery_single( $self->service, $to_match )
+                    || $self->_verify_discovery_single( $self->service, $to_match_1_0 );
+        return 1 if $verified;
     }
 
-    return $self->_discover_and_verify();
+    return $self->_discover_and_verify(
+        $to_match->claimed_identifier,
+        [$to_match, $to_match_1_0]
+    );
 }
 
 sub _verify_discovery_results_openid2 {

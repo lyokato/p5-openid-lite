@@ -9,9 +9,6 @@ use OpenID::Lite::SessionHandler::NoEncryption;
 use OpenID::Lite::SessionHandler::DH::SHA1;
 use OpenID::Lite::SessionHandler::DH::SHA256;
 
-# flyweight pattern
-
-
 # dispatch table
 my %handlers = (
     NO_ENCRYPTION() => OpenID::Lite::SessionHandler::NoEncryption->new,

@@ -3,10 +3,12 @@ package OpenID::Lite::Extension::UI::Request;
 use Any::Moose;
 extends 'OpenID::Lite::Extension::Request';
 
-use constant UI_NS       => q{http://specs.openid.net/extensions/ui/1.0};
-use constant UI_POPUP_NS => q{http://specs.openid.net/extensions/ui/1.0/popup};
-use constant UI_LANG_NS  => q{http://specs.openid.net/extensions/ui/1.0/lang-pref};
-use constant UI_NS_ALIAS => q{ui};
+use OpenID::Lite::Extension::UI qw(
+    UI_NS
+    UI_POPUP_NS
+    UI_LANG_NS
+    UI_NS_ALIAS
+);
 
 has 'lang' => (
     is      => 'rw',

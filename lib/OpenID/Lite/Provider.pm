@@ -4,6 +4,7 @@ use Any::Moose;
 use OpenID::Lite::Message;
 use OpenID::Lite::Realm;
 use OpenID::Lite::Provider::Discover;
+
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
 

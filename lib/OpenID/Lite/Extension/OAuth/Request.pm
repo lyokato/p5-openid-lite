@@ -2,9 +2,7 @@ package OpenID::Lite::Extension::OAuth::Request;
 
 use Any::Moose;
 extends 'OpenID::Lite::Extension::Request';
-
-use constant OAUTH_NS => q{http://specs.openid.net/extensions/oauth/1.0};
-use constant OAUTH_NS_ALIAS => q{oauth};
+use OpenID::Lite::Extension::OAuth qw(OAUTH_NS OAUTH_NS_ALIAS);
 
 has 'consumer' => (
     is       => 'rw',

@@ -6,6 +6,8 @@ use Carp ();
 
 extends 'OpenID::Lite::Extension::Request';
 
+use OpenID::Lite::Extension::SREG qw(SREG_NS_1_0 SREG_NS_1_1 SREG_NS_ALIAS);
+
 has '_required' => (
     is      => 'ro',
     isa     => 'ArrayRef',
@@ -35,9 +37,6 @@ my @SREG_FIELDS = qw(
     timezone
 );
 
-use constant SREG_NS_1_0   => q{http://openid.net/sreg/1.0};
-use constant SREG_NS_1_1   => q{http://openid.net/extensions/sreg/1.1};
-use constant SREG_NS_ALIAS => q{sreg};
 
 override 'append_to_params' => sub {
     my ( $self, $params ) = @_;

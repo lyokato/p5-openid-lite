@@ -29,22 +29,9 @@ has 'redirect_for_setup' => (
     default => 1,
 );
 
-has 'secret_lifetime' => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 86400,
-);
-
-has 'server_secret' => (
-    is      => 'ro',
-    isa     => 'Str',
-    default => q{secret},
-);
-
-has '_assoc_builder' => (
+has 'assoc_builder' => (
     is         => 'ro',
     isa        => 'OpenID::Lite::Provider::AssociationBuilder',
-    lazy_build => 1,
 );
 
 # callbacks
@@ -147,10 +134,9 @@ sub signed_return_url {
     my $assoc;
     my $invalidate_handle;
     if ($assoc_handle) {
-        my $found = $self->_assoc_builder->build_from_handle(
+        my $found = $self->assoc_builder->build_from_handle(
             $assoc_handle => {
                 dumb     => 0,
-                lifetime => $self->secret_lifetime,
             }
         );
         if ( $found && !$found->is_expired ) {
@@ -163,7 +149,7 @@ sub signed_return_url {
 
     unless ($assoc) {
 
-        $assoc = $self->_assoc_builder->build_association(
+        $assoc = $self->assoc_builder->build_association(
             type => q{HMAC-SHA1},
             dumb => 1,
         );
@@ -204,12 +190,6 @@ sub cancel_return_url {
     # openid.ns =>
     $url->query_form( 'openid.mode' => CANCEL );
     return $url->as_string;
-}
-
-sub _build__assoc_builder {
-    my $self = shift;
-    return OpenID::Lite::Provider::AssociationBuilder->new(
-        server_secret => $self->server_secret, );
 }
 
 no Any::Moose;

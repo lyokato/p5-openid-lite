@@ -21,6 +21,12 @@ has 'server_secret' => (
     default => q{secret},
 );
 
+has 'secret_lifetime' => (
+    is      => 'ro',
+    isa     => 'Int',
+    default => 86400,
+);
+
 has 'secret_gen_interval' => (
     is      => 'ro',
     isa     => 'Int',
@@ -32,7 +38,7 @@ sub build_association {
     my %opts     = @_;
     my $type     = $opts{type};
     my $dumb     = $opts{dumb} || 0;
-    my $lifetime = $opts{lifetime} || 86400;
+    my $lifetime = $opts{lifetime} || $self->secret_lifetime;
 
     my $signature_method
         = OpenID::Lite::SignatureMethods->select_method($type)
@@ -69,7 +75,7 @@ sub build_from_handle {
     my ( $self, $handle, $opts ) = @_;
 
     my $dumb     = $opts->{dumb}     || 0;
-    my $lifetime = $opts->{lifetime} || 86400;
+    my $lifetime = $opts->{lifetime} || $self->secret_lifetime;
     my ( $time, $type, $nonce, $nonce_sig80 ) = split( /:/, $handle );
     return $self->ERROR(q{not found proper time,type,nonce and nonce_sig80})
         unless $time =~ /^\d+$/ && $type && $nonce && $nonce_sig80;

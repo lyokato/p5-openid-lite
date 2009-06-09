@@ -12,5 +12,3 @@ use constant UI_LANG_NS  => q{http://specs.openid.net/extensions/ui/1.0/lang-pre
 use constant UI_NS_ALIAS => q{ui};
 
 1;
-
-

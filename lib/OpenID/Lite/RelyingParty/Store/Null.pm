@@ -16,7 +16,7 @@ sub remove_association {
 }
 
 sub cleanup_associations {
-
+    return 0;
 }
 
 sub use_nonce {

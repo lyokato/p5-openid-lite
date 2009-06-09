@@ -4,7 +4,6 @@ use Any::Moose;
 use OpenID::Lite::SignatureMethods;
 use OpenID::Lite::Message;
 use OpenID::Lite::Nonce;
-use OpenID::Lite::Provider::AssociationBuilder;
 use OpenID::Lite::Constants::ModeType qw(ID_RES);
 with 'OpenID::Lite::Role::ErrorHandler';
 
@@ -16,21 +15,9 @@ has 'check_nonce' => (
     }
 );
 
-has 'secret_lifetime' => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 86400,
-);
-
-has 'server_secret' => (
-    is  => 'ro',
-    isa => 'Str',
-);
-
-has '_assoc_builder' => (
+has 'assoc_builder' => (
     is         => 'ro',
     isa        => 'OpenID::Lite::Provider::AssociationBuilder',
-    lazy_build => 1,
 );
 
 sub handle_request {
@@ -48,9 +35,8 @@ sub handle_request {
         unless $sig;
 
     my $is_valid = q{false};
-    my $assoc = $self->_assoc_builder->build_from_handle( $assoc_handle => {
+    my $assoc = $self->assoc_builder->build_from_handle( $assoc_handle => {
         dumb     => 1,
-        lifetime => $self->secret_lifetime,
     } );
     if ( $assoc && !$assoc->is_expired ) {
         my $signature_method
@@ -82,13 +68,6 @@ sub handle_request {
     }
 
     return $res_params;
-}
-
-sub _build__assoc_builder {
-    my $self = shift;
-    return OpenID::Lite::Provider::AssociationBuilder->new(
-        server_secret => $self->server_secret,
-    );
 }
 
 no Any::Moose;

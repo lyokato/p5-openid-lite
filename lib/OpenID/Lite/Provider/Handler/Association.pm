@@ -4,26 +4,12 @@ use Any::Moose;
 use OpenID::Lite::Message;
 use OpenID::Lite::Constants::SessionType qw(:all);
 use OpenID::Lite::Constants::AssocType qw(:all);
-use OpenID::Lite::Provider::AssociationBuilder;
 use OpenID::Lite::SessionHandlers;
 with 'OpenID::Lite::Role::ErrorHandler';
 
-has 'secret_lifetime' => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => 14 * 24 * 60 * 60,
-);
-
-has 'server_secret' => (
-    is      => 'ro',
-    isa     => 'Str',
-    default => q{secret},
-);
-
-has '_assoc_builder' => (
+has 'assoc_builder' => (
     is         => 'ro',
     isa        => 'OpenID::Lite::Provider::AssociationBuilder',
-    lazy_build => 1,
 );
 
 sub handle_request {
@@ -70,13 +56,10 @@ sub handle_request {
     }
 
     # build association
-    my $assoc = $self->_assoc_builder->build_association(
+    my $assoc = $self->assoc_builder->build_association(
         type     => $assoc_type,
-        lifetime => $self->secret_lifetime,
         dumb     => 0,
     );
-
-    #my $assoc = OpenID::Lite::Association->gen($assoc_type, $self->secret_lifetime);
 
     my $res_params = OpenID::Lite::Message->new;
     $res_params->set( ns           => $req_params->ns );
@@ -89,13 +72,6 @@ sub handle_request {
     #$self->store->save_association($assoc);
 
     return $res_params;
-}
-
-sub _build__assoc_builder {
-    my $self = shift;
-    return OpenID::Lite::Provider::AssociationBuilder->new(
-        server_secret => $self->server_secret, 
-    );
 }
 
 no Any::Moose;

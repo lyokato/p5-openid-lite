@@ -142,7 +142,7 @@ sub associate {
 }
 
 sub complete {
-    my ( $self, $current_url, $request ) = @_;
+    my ( $self, $request, $current_url ) = @_;
     my $params  = OpenID::Lite::Message->from_request($request);
     my $service = $self->last_requested_endpoint;
     my %args    = (
@@ -231,14 +231,18 @@ OpenID::Lite::RelyingParty - openid client for relying party
         my $openid = OpenID::Lite::RelyingParty->new;
 
         # XXX: fix me
-        my $result = $openid->complete( q{http://myapp/return_to}, $self->request );
+        my $result = $openid->complete( $self->request, q{http://myapp/return_to} );
         if ( $result->is_success ) {
 
         } elsif ( $result->is_canceled ) {
 
         } elsif ( $result->is_needed_setup ) {
 
-        } else {
+        } elsif ( $result->is_not_openid ) {
+
+        } elsif ( $result->is_invalid ) {
+
+        } elsif ( $result->is_error ) {
 
         }
     }

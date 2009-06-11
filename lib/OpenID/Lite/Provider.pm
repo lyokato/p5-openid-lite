@@ -49,12 +49,6 @@ has 'endpoint_url' => (
     required => 1,
 );
 
-has 'redirect_for_setup' => (
-    is      => 'ro',
-    isa     => 'Bool',
-    default => 1,
-);
-
 has 'get_user' => (
     is      => 'ro',
     isa     => 'CodeRef',
@@ -69,7 +63,6 @@ has 'get_identity' => (
     default => sub {
         sub { return; }
     },
-
 );
 
 has 'is_identity' => (
@@ -148,7 +141,6 @@ sub _build__handlers {
         assoc_builder      => $assoc_builder,
         setup_url          => $self->setup_url,
         endpoint_url       => $self->endpoint_url,
-        redirect_for_setup => $self->redirect_for_setup,
         get_user           => $self->get_user,
         get_identity       => $self->get_identity,
         is_identity        => $self->is_identity,
@@ -192,3 +184,119 @@ no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 
+=head1 NAME
+
+OpenID::Lite::Provider - OP class
+
+=head1 SYNOPSIS
+
+OpenID Controller
+
+    package YourApp::OpenIDController;
+
+    my $op = OpenID::Lite::Provider->new(
+        endpoint_url => q{http://yourapp.com/openid},
+        setup_url    => q{http://yourapp.com/setup},
+    );
+
+    # server endpoint
+    sub openid {
+        my $self = shift;
+        my $result = $op->handle_request( $self->request );
+        if ( $result->is_for_setup ) {
+
+            # save the parameters into session
+            # this is just a example, you can take other ways.
+            # for example, use query-string parameter.
+            $self->session->set( 'openid.checkid' => $result );
+
+            # required setup and
+            # show decision page
+
+            # 1. redirect to action for setup
+            $self->redirect_to( $self->uri_to( action => 'setup' ) );
+            return;
+
+            # 2. or directly show setup page.
+            $self->view->render('decision_page', {
+                realm => $result->find_requesting_realm,
+            } );
+
+        } elsif ( $result->is_setup_needed ) {
+
+            return $self->redirect_to( $result->make_setup_url() );
+
+        } elsif ( $result->is_positive_assertion ) {
+
+            # do extension processes if you need.
+            my $sreg_req = OpenID::Lite::Extension::SREG::Request->from_result($result);
+            $sreg_req->request_fields();
+            my $sreg_res = OpenID::Lite::Extension::SREG::Response->new();
+            $result->add_extension( $sreg_res );
+
+            # redirect back to RP with signed params.
+            return $self->redirect_to( $result->make_signed_url() );
+
+        } elsif ( $result->is_for_direct ) {
+
+            # direct communication response
+            $self->view->content( $result->content );
+
+        } elsif ( $result->is_for_checkid_error ) {
+
+            # show error page on checkid
+            $self->log->debug( $result->errstr );
+            $self->view->render('error');
+
+        }
+    }
+
+    sub setup {
+        my $self = shift;
+        my $checkid_result = $self->session->get('openid.checkid');
+    }
+
+    sub user_cancel {
+        my $self = shift;
+        my $checkid_result = $self->session->get('openid.checkid');
+        return $self->redirect_to( $checkid_result->make_cancel_url() );
+    }
+
+    sub user_approved {
+        my $self = shift;
+        my $checkid_result = $self->session->get('openid.checkid');
+
+        # redirect to RP as positive-assertion
+        my $sreg_req = OpenID::Lite::Extension::SREG::Request->extract($checkid_result);
+        $sreg_req->request_fields();
+        my $sreg_res = OpenID::Lite::Extension::SREG::Response->new();
+        $result->add_extension( $sreg_res );
+
+        return $self->redirect_to( $checkid_result->make_signed_url() );
+
+    }
+
+    1;
+
+Application Root
+
+    package YourApp::RootController;
+
+    sub root {
+        my $self = shift;
+    }
+    1;
+
+User Page
+
+    package YourApp::UserController;
+
+    sub user {
+        my ( $self, $user_id ) = @_;
+    }
+
+    1;
+
+=head1 DESCRIPTION
+
+=cut

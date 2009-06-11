@@ -3,6 +3,7 @@ package OpenID::Lite::Provider::Handler::CheckID;
 use Any::Moose;
 use OpenID::Lite::Constants::ModeType qw(:all);
 use OpenID::Lite::Constants::Namespace qw(IDENTIFIER_SELECT);
+use OpenID::Lite::Constants::ProviderResponseType qw(:all);
 use OpenID::Lite::Message;
 use OpenID::Lite::Realm;
 use OpenID::Lite::Nonce;
@@ -70,21 +71,33 @@ sub handle_request {
         unless $identity;
 
     my $res_params = OpenID::Lite::Message->new;
+    # XXX check
+    $res_params->set( ns => $req_params->get('ns') );
+    $res_params->set( $realm_key, $realm );
+    $res_params->set( identity     => $identity );
+    $res_params->set( claimed_id   => $req_params->get('claimed_id') );
+    $res_params->set( return_to    => $req_params->get('return_to') );
+    $res_params->set( assoc_handle => $req_params->get('assoc_handle') );
 
     my $is_identity = 0;
     if ( $identity eq IDENTIFIER_SELECT ) {
-        $identity    = $self->get_identity->($user);
-        $is_identity = 0;
+        $identity    = $self->get_identity->($user, $realm);
+        $is_identity = 1;
     }
     else {
-        $is_identity = $self->is_identity->( $user, $identity );
+        $is_identity = $self->is_identity->( $user, $identity, $realm );
     }
     my $is_trusted = $self->is_trusted->( $user, $realm )
         if $is_identity;
     if ($is_trusted) {
 
+        # XXX
         # $url = $self->gen_signed_response();
-        return;
+        return OpenID::Lite::Provider::Response->new(
+            type             => REDIRECT,
+            res_params       => $res_params,
+            should_be_signed => 1,
+        );
     }
 
     my $setup_url = URI->new( $self->setup_url );
@@ -100,8 +113,10 @@ sub handle_request {
             $res_params->set( user_setup_url => $setup_url );
         }
 
-        # return as error-redirect
-        return;
+        return OpenID::Lite::Provider::Response->new(
+            type       => REDIRECT,
+            res_params => $res_params,
+        );
     }
 
     if ( $self->redirect_for_setup ) {

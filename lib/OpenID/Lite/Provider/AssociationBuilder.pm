@@ -11,7 +11,11 @@ has 'get_server_secret' => (
     is      => 'ro',
     isa     => 'CodeRef',
     default => sub {
-        sub { my $s_sec = shift; '' }
+        sub {
+            my $sec_time = shift;
+            my $secret = '';
+            return $secret;
+        }
     },
 );
 

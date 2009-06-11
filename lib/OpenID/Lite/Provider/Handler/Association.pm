@@ -69,8 +69,6 @@ sub handle_request {
 
     $session->set_response_params( $req_params, $res_params, $assoc );
 
-    #$self->store->save_association($assoc);
-
     return $res_params;
 }
 

@@ -41,16 +41,3 @@ no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 
-=head1 NAME 
-
-=head1 SYNOPSIS
-
-    my $fetcher = OpenID::Lite::RelyingParty::Discover::Fetcher::XRI->new(
-        agent    => LWP::UserAgent->new,
-        resolver => '',
-    );
-
-    my $xrds = $fetcher->fetch($xri)
-        or die $fetcher->errstr;
-
-=cut

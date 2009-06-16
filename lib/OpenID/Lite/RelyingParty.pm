@@ -205,13 +205,15 @@ OpenID::Lite::RelyingParty - openid client for relying party
 
 =head1 SYNOPSIS
 
+    my $openid = OpenID::Lite::RelyingParty->new();
+
     sub login {
 
         my $self = shift;
 
         my $user_suplied_identifier = $self->req->param('openid_identifier');
+        return unless $self->validate( $user_suplied_identifier );
 
-        my $openid = OpenID::Lite::RelyingParty->new;
         my $checkid_request = $openid->begin( $user_suplied_identifier );
 
         my $sreg = OpenID::Lite::Extension::SREG::Request->new;
@@ -223,6 +225,7 @@ OpenID::Lite::RelyingParty - openid client for relying party
             realm     => q{http://example.com/},
             immediate => 1,
         );
+
         return $self->redirect_to( $redirect_url );
     }
 

@@ -206,14 +206,14 @@ OpenID Controller
         if ( $result->is_for_setup ) {
 
             # save the parameters into session
-            # this is just a example, you can take other ways.
+            # this is just an example, you can take other ways.
             # for example, use query-string parameter.
             $self->session->set( 'openid.checkid' => $result );
 
             # required setup and
             # show decision page
 
-            # 1. redirect to action for setup
+            # 1. redirect to action that is for setup
             $self->redirect_to( $self->uri_to( action => 'setup' ) );
             return;
 
@@ -222,7 +222,7 @@ OpenID Controller
                 realm => $result->find_requesting_realm,
             } );
 
-        } elsif ( $result->is_setup_needed ) {
+        } elsif ( $result->requires_setup ) {
 
             return $self->redirect_to( $result->make_setup_url() );
 
@@ -237,12 +237,12 @@ OpenID Controller
             # redirect back to RP with signed params.
             return $self->redirect_to( $result->make_signed_url() );
 
-        } elsif ( $result->is_for_direct ) {
+        } elsif ( $result->is_for_direct_communication ) {
 
             # direct communication response
             $self->view->content( $result->content );
 
-        } elsif ( $result->is_for_checkid_error ) {
+        } elsif ( $result->is_checkid_error ) {
 
             # show error page on checkid
             $self->log->debug( $result->errstr );

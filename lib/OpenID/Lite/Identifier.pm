@@ -3,7 +3,9 @@ package OpenID::Lite::Identifier;
 use strict;
 use warnings;
 
-use overload q{""} => sub { shift->as_string }, fallback => 1;
+use overload
+    q{""}    => sub { shift->as_string },
+    fallback => 1;
 
 use URI;
 use OpenID::Lite::Util::URI;

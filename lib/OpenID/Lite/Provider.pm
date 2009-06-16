@@ -90,7 +90,6 @@ has '_discoverer' => (
 has '_handlers' => (
     is         => 'ro',
     isa        => 'HashRef',
-    default    => sub { +{} },
     lazy_build => 1,
 );
 

@@ -3,7 +3,7 @@ package OpenID::Lite::Message::Decoder::Mojo;
 use Any::Moose;
 extends 'OpenID::Lite::Message::Decoder::Hash';
 
-extends 'decode' => sub {
+override 'decode' => sub {
     my ( $self, $request ) = @_;
     return super( $request->params->to_hash );
 };

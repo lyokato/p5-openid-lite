@@ -194,7 +194,7 @@ sub make_setup_url {
 
 sub content {
     my $self = shift;
-    if ( $self->is_for_direct ) {
+    if ( $self->is_for_direct_communication ) {
         return $self->res_params->to_key_value;
     }
     elsif ( $self->is_checkid_error ) {

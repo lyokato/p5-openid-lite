@@ -31,7 +31,7 @@ has 'secret_gen_interval' => (
     default => 14 * 24 * 60 * 60,
 );
 
-has 'gen_server_secret' => (
+has 'get_server_secret' => (
     is      => 'ro',
     isa     => 'CodeRef',
     default => sub { sub { return ''; } },

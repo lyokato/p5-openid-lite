@@ -6,6 +6,7 @@ use OpenID::Lite::Constants::Namespace qw(:all);
 use OpenID::Lite::Constants::ProviderResponseType qw(:all);
 use OpenID::Lite::Provider::Response;
 use OpenID::Lite::Message;
+use OpenID::Lite::Realm;
 use OpenID::Lite::Provider::AssociationBuilder;
 use URI;
 
@@ -29,10 +30,38 @@ has 'assoc_builder' => (
 );
 
 # callbacks
-has 'get_user'     => ();
-has 'get_identity' => ();
-has 'is_identity'  => ();
-has 'is_trusted'   => ();
+has 'get_user' => (
+    is      => 'ro',
+    isa     => 'CodeRef',
+    default => sub {
+        sub { return; }
+    },
+);
+
+has 'get_identity' => (
+    is      => 'ro',
+    isa     => 'CodeRef',
+    default => sub {
+        sub { return; }
+    },
+);
+
+has 'is_identity' => (
+    is      => 'ro',
+    isa     => 'CodeRef',
+    default => sub {
+        sub { return; }
+    },
+);
+
+has 'is_trusted' => (
+    is      => 'ro',
+    isa     => 'CodeRef',
+    default => sub {
+        sub { return; }
+    },
+);
+
 
 sub handle_request {
 
@@ -51,7 +80,7 @@ sub handle_request {
 
     if ($realm) {
         return $self->_build_error($req_params, q{Invalid realm or return_to.}, $ns)
-            unless OpenID::Lite::Ream->check_url( $realm, $return_to );
+            unless OpenID::Lite::Realm->check_url( $realm, $return_to );
     }
     else {
         $realm = $return_to;

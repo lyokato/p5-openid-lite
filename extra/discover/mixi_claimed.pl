@@ -12,6 +12,6 @@ use OpenID::Lite::Agent::Dump;
 
 my $identifier = q{https://id.mixi.jp/364947};
 my $id = OpenID::Lite::Identifier->normalize($identifier);
-my $disco = OpenID::Lite::RelyingParty::Discover->new();
+my $disco = OpenID::Lite::RelyingParty::Discover->new( agent => OpenID::Lite::Agent::Dump->new);
 my $servers = $disco->discover($id);
 say dump($servers);

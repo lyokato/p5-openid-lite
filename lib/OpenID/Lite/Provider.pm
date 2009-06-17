@@ -100,8 +100,8 @@ sub handle_request {
     return $self->ERROR(q{Missing parameter, "mode"}) unless $mode;
     my $handler = $self->_get_handler_for($mode);
     return $self->ERROR( sprintf q{Invalid paramter, "mode", "%s"}, $mode )
-        unless $mode;
-    $handler->handle_request($params);
+        unless $handler;
+    return $handler->handle_request($params);
 }
 
 sub _get_handler_for {

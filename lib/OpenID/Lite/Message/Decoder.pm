@@ -25,10 +25,11 @@ sub add_pair {
 sub decode {
     my ( $self, $request ) = @_;
     my $req_class = ref $request;
-    my $decoder   = $self->create_decoder_for($req_class)
-        or return $self->ERROR(
-        sprintf q{Proper decoder not found for request class "%s"},
-        $req_class );
+    my $decoder   = $self->create_decoder_for($req_class);
+    return unless $decoder;
+    #or return $self->ERROR(
+    #    sprintf q{Proper decoder not found for request class "%s"},
+    #    $req_class );
     return $decoder->decode($request);
 }
 

@@ -7,7 +7,7 @@ with 'OpenID::Lite::Role::AgentHandler';
 use Params::Validate;
 use OpenID::Lite::RelyingParty::CheckID::Result;
 use OpenID::Lite::RelyingParty::IDResHandler::Verifier;
-use OpenID::Lite::Constants::ModeType qw(ID_RES SETUP_NEEDED CANCEL ERROR);
+use OpenID::Lite::Constants::ModeType qw(ID_RES SETUP_NEEDED CANCEL ERROR_MODE);
 use OpenID::Lite::Constants::CheckIDResponse qw(:all);
 
 has 'store' => (
@@ -80,7 +80,7 @@ sub idres {
             params => $params,
         );
     }
-    elsif ( $mode eq ERROR ) {
+    elsif ( $mode eq ERROR_MODE ) {
         my $error     = $params->get('error')     || '';
         my $contact   = $params->get('contact')   || '';
         my $reference = $params->get('reference') || '';

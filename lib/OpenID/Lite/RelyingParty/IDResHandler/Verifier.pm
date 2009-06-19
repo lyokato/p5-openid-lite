@@ -7,6 +7,7 @@ use OpenID::Lite::Nonce;
 use OpenID::Lite::Util::URI;
 use OpenID::Lite::Util::XRI;
 use OpenID::Lite::SignatureMethods;
+use OpenID::Lite::Identifier;
 use OpenID::Lite::RelyingParty::DirectCommunication;
 use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::RelyingParty::Discover::Service;
@@ -63,7 +64,7 @@ sub verify {
     $self->_check_for_fields() or return;
     $self->_verify_return_to() or return;
 
-    #$self->_verify_discovery_results() or return;
+    $self->_verify_discovery_results() or return;
     $self->_check_nonce()     or return;
     $self->_check_signature() or return;
 
@@ -167,7 +168,6 @@ sub _verify_return_to_base {
 
 sub _verify_discovery_single {
     my ( $self, $endpoint, $to_match ) = @_;
-
     for my $type_uri ( @{ $to_match->types } ) {
         return $self->ERROR(q{Type uri mismatch.})
             unless $endpoint->has_type($type_uri);
@@ -223,7 +223,6 @@ sub _verify_discovery_single {
         return $self->ERROR( sprintf q{OP endpoint mismatch, "%s" and "%s"},
             $endpoint->url, $to_match->url );
     }
-
     return 1;
 }
 
@@ -248,12 +247,14 @@ sub _verify_discovered_services {
 
 sub _discover_and_verify {
     my ( $self, $claimed_id, $to_match_endpoints ) = @_;
+    $claimed_id = OpenID::Lite::Identifier->normalize($claimed_id);
     my $services = $self->_discoverer->discover($claimed_id)
         or return $self->ERROR( $self->_discoverer->errstr );
     unless ( @$services > 0 ) {
         return $self->ERROR( sprintf q{No OpenID information found at %s},
             $claimed_id );
     }
+    use Data::Dump qw(dump);
     return $self->_verify_discovered_services( $claimed_id, $services,
         $to_match_endpoints );
 }
@@ -296,7 +297,6 @@ sub _verify_discovery_results_openid1 {
 
 sub _verify_discovery_results_openid2 {
     my $self = shift;
-
     my $to_match = OpenID::Lite::RelyingParty::Discover::Service->new;
     $to_match->add_type(SIGNON_2_0);
     $to_match->add_uri( $self->params->get('op_endpoint') );
@@ -326,9 +326,10 @@ sub _verify_discovery_results_openid2 {
     }
 
     if ( $self->has_service ) {
-        $self->_verify_discovery_single( $self->service, $to_match )
-            or $self->_discover_and_verify( $claimed_id, [$to_match] )
-            or return;
+        unless ( $self->_verify_discovery_single( $self->service, $to_match ) ) {
+            return unless $claimed_id;
+            return unless $self->_discover_and_verify( $claimed_id, [$to_match] )
+        }
     }
     else {
         $self->_discover_and_verify( $claimed_id, [$to_match] )

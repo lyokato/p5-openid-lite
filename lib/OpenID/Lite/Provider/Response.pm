@@ -49,12 +49,6 @@ has 'errstr' => (
     default => '',
 );
 
-has 'should_be_signed' => (
-    is      => 'ro',
-    isa     => 'Bool',
-    default => 0,
-);
-
 sub is_for_setup {
     my $self = shift;
     return $self->type eq SETUP;
@@ -192,18 +186,56 @@ sub make_setup_url {
     return $params->to_url( $self->req_params->get('return_to') );
 }
 
+sub make_error_url {
+    my $self = shift;
+    unless ( $self->is_checkid_error ) {
+        confess 'make_error_url can be called only when the response-type is checkid error.';
+    }
+    $self->res_params->to_url( $self->req_params->get('return_to') );
+}
+
 sub content {
     my $self = shift;
     if ( $self->is_for_direct_communication ) {
         return $self->res_params->to_key_value;
     }
-    elsif ( $self->is_checkid_error ) {
-        return $self->errstr;
-    }
     else {
         confess
             q{content shouldn't be called when the response is for redirect or setup};
     }
+}
+
+sub get_realm {
+    my $self = shift;
+    confess
+        q{get_realm works when is_for_setup or is_positive_assertion returns true}
+        unless $self->is_for_setup || $self->is_positive_assertion;
+    return $self->res_params->get('realm') || $self->res_params->get('trust_root');
+}
+
+sub get_identity {
+    my $self = shift;
+    confess
+        q{get_identity works when is_for_setup or is_positive_assertion returns true}
+        unless $self->is_for_setup || $self->is_positive_assertion;
+    return $self->res_params->get('identity');
+}
+
+sub set_identity {
+    my $self = shift;
+    my $identity = shift;
+    confess
+        q{get_identity works when is_for_setup or is_positive_assertion returns true}
+        unless $self->is_for_setup || $self->is_positive_assertion;
+    return $self->res_params->set('identity' => $identity);
+}
+
+sub get_claimed_id {
+    my $self = shift;
+    confess
+        q{get_claimed_id works when is_for_setup or is_positive_assertion returns true}
+        unless $self->is_for_setup || $self->is_positive_assertion;
+    return $self->res_params->get('claimed_id');
 }
 
 no Any::Moose;

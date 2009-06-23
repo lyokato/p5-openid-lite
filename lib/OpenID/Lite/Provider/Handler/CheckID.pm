@@ -121,14 +121,22 @@ sub handle_request {
             req_params       => $req_params,
             res_params       => $res_params,
             assoc_builder    => $self->assoc_builder,
+            endpoint_url     => $self->endpoint_url,
         );
     }
 
     my $mode = $req_params->get('mode');
     if ( $mode eq CHECKID_IMMEDIATE ) {
 
-        # XXX
-        my $setup_params = {};
+        # XXX : TODO use setup_map
+        my $setup_params = {
+            return_to    => $req_params->get('return_to'),
+            identity     => $identity,
+            assoc_handle => $req_params->get('assoc_handle'),
+        };
+        $setup_params->{ ns } = $ns if $ns;
+        $setup_params->{ $realm_key } = $realm;
+
         return OpenID::Lite::Provider::Response->new(
             type         => REQUIRES_SETUP,
             req_params   => $req_params,
@@ -143,6 +151,7 @@ sub handle_request {
         req_params    => $req_params,
         res_params    => $res_params,
         assoc_builder => $self->assoc_builder,
+        endpoint_url  => $self->endpoint_url,
     );
 }
 

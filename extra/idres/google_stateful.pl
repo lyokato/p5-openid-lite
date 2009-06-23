@@ -83,7 +83,7 @@ is($bad_url_res->type, q{invalid});
 my $res = $idres->idres(
     current_url => $current_url,
     params      => $message,
-    service     => $service
+#    service     => $service
 );
 
 ok($res->is_success);

@@ -34,7 +34,9 @@ has 'secret_gen_interval' => (
 has 'get_server_secret' => (
     is      => 'ro',
     isa     => 'CodeRef',
-    default => sub { sub { return ''; } },
+    default => sub {
+        sub { return ''; }
+    },
 );
 
 has 'setup_url' => (
@@ -101,7 +103,9 @@ sub handle_request {
     my $handler = $self->_get_handler_for($mode);
     return $self->ERROR( sprintf q{Invalid paramter, "mode", "%s"}, $mode )
         unless $handler;
-    return $handler->handle_request($params);
+    my $result = $handler->handle_request($params)
+        or return $self->ERROR( $handler->errstr );
+    return $result;
 }
 
 sub _get_handler_for {
@@ -137,13 +141,13 @@ sub _build__handlers {
         assoc_builder => $assoc_builder, );
 
     $handlers->{checkid} = OpenID::Lite::Provider::Handler::CheckID->new(
-        assoc_builder      => $assoc_builder,
-        setup_url          => $self->setup_url,
-        endpoint_url       => $self->endpoint_url,
-        get_user           => $self->get_user,
-        get_identity       => $self->get_identity,
-        is_identity        => $self->is_identity,
-        is_trusted         => $self->is_trusted,
+        assoc_builder => $assoc_builder,
+        setup_url     => $self->setup_url,
+        endpoint_url  => $self->endpoint_url,
+        get_user      => $self->get_user,
+        get_identity  => $self->get_identity,
+        is_identity   => $self->is_identity,
+        is_trusted    => $self->is_trusted,
     );
     return $handlers;
 }

@@ -79,7 +79,7 @@ sub handle_request {
     my $realm = $req_params->get($realm_key);
 
     if ($realm) {
-        return $self->ERROR($req_params, q{Invalid realm or return_to.}, $ns)
+        return $self->ERROR(q{Invalid realm or return_to.})
             unless OpenID::Lite::Realm->check_url( $realm, $return_to );
     }
     else {

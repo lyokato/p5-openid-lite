@@ -176,7 +176,7 @@ sub make_setup_url {
     my $params = OpenID::Lite::Message->new;
     my $surl   = URI->new( $self->setup_url );
     $surl->query_form( %{ $self->setup_params } )
-        if $self->setup_parmas;
+        if $self->setup_params;
 
     my $mode = $self->req_params->get('mode');
     if ( $mode eq CHECKID_IMMEDIATE ) {

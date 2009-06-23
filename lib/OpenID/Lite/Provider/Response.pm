@@ -170,8 +170,8 @@ sub make_setup_url {
     my $self = shift;
     confess q{no setup_url found.} unless $self->setup_url;
     confess
-        q{make_setup_url works when is_setup_needed or is_for_setup returns true.}
-        unless $self->is_setup_needed || $self->is_for_setup;
+        q{make_setup_url works when requires_setup or is_for_setup returns true.}
+        unless $self->requires_setup || $self->is_for_setup;
 
     my $params = OpenID::Lite::Message->new;
     my $surl   = URI->new( $self->setup_url );

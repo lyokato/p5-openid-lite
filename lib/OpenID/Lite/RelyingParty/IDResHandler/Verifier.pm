@@ -434,7 +434,8 @@ sub _check_auth {
         or return;
     my $server_url = $self->service->url;
     my $res_params
-        = $self->_direct_communication->send_request( $server_url, $params );
+        = $self->_direct_communication->send_request( $server_url, $params )
+            or return $self->ERROR(q{Failed direct-communication, 'checkauth' request});
     return $self->_process_check_auth_response($res_params);
 }
 

@@ -66,7 +66,7 @@ sub handle_request {
     my $invalidate_handle = $copied->get('invalidate_handle');
     if ($invalidate_handle) {
         my $assoc
-            = $self->store->find_association_by_handle($invalidate_handle);
+            = $self->assoc_builder->build_from_handle( $invalidate_handle, { dumb => 0 } );
         unless ( $assoc && !$assoc->is_expired ) {
             $res_params->set( invalidate_handle => $invalidate_handle );
         }

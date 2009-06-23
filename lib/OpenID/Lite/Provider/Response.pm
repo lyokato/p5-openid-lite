@@ -65,7 +65,7 @@ sub is_for_direct_communication {
     return $self->type eq DIRECT;
 }
 
-sub is_for_checkid_error {
+sub is_checkid_error {
     my $self = shift;
     return $self->type eq CHECKID_ERROR;
 }

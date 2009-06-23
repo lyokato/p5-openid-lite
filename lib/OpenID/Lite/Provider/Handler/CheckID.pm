@@ -142,6 +142,7 @@ sub handle_request {
             req_params   => $req_params,
             setup_url    => $self->setup_url,
             setup_params => $setup_params,
+            res_params   => $res_params,
         );
 
     }

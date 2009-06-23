@@ -161,7 +161,7 @@ sub make_cancel_url {
     my $self   = shift;
     my $params = OpenID::Lite::Message->new;
     $params->set( ns => $self->req_params->get('ns') )
-        if $self->req_paams->get('ns');
+        if $self->req_params->get('ns');
     $params->set( mode => CANCEL );
     return $params->to_url( $self->req_params->get('return_to') );
 }

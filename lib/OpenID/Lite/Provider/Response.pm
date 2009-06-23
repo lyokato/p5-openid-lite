@@ -22,6 +22,12 @@ has 'setup_url' => (
     default => '',
 );
 
+has 'endpoint_url' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => '',
+);
+
 has 'setup_params' => (
     is  => 'ro',
     isa => 'HashRef',

@@ -69,7 +69,7 @@ sub handle_request {
 
     my $ns = $req_params->get('ns');
     my $return_to = $req_params->get('return_to');
-    return $self->_build_error($req_params, q{Missing parameter, "return_to"}, $ns)
+    return $self->ERROR(q{Missing parameter, "return_to"})
         unless $return_to && $return_to =~ m!https?://!;
 
     my $realm_key
@@ -79,7 +79,7 @@ sub handle_request {
     my $realm = $req_params->get($realm_key);
 
     if ($realm) {
-        return $self->_build_error($req_params, q{Invalid realm or return_to.}, $ns)
+        return $self->ERROR($req_params, q{Invalid realm or return_to.}, $ns)
             unless OpenID::Lite::Realm->check_url( $realm, $return_to );
     }
     else {

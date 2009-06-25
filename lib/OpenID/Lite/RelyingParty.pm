@@ -233,21 +233,56 @@ OpenID::Lite::RelyingParty - openid client for relying party
         my $self = shift;
         my $openid = OpenID::Lite::RelyingParty->new;
 
-        # XXX: fix me
-        my $result = $openid->complete( $self->request, q{http://myapp/return_to} );
-        if ( $result->is_success ) {
+        my $res = $openid->complete( $self->request, q{http://myapp/return_to} );
 
-        } elsif ( $result->is_canceled ) {
+        if ( $res->is_success ) {
 
-        } elsif ( $result->is_needed_setup ) {
+            # openid login successfully completed.
+            # you should save the verified identifier.
 
-        } elsif ( $result->is_not_openid ) {
+            my $claimed_identifier = $res->claimed_identifier;
+            my $identity           = $res->identity;
 
-        } elsif ( $result->is_invalid ) {
+        } elsif ( $res->is_canceled ) {
 
-        } elsif ( $result->is_error ) {
+            # user canceled openid-login.
+            #
+            # redirect back to top-page or login-page.
+            return $your_app->redirect('http://yourapp.com/');
+
+        } elsif ( $res->is_needed_setup ) {
+
+            # you requested as immediate-mode.
+            # but OP requires setup.
+
+            # so, then redirect to the indicated url
+            return $your_app->redirect( $res->url );
+
+            # if you accept OP with white-list,
+            # You can know whether the OP accepts immedate mode or not.
+            # So, it's better to change not to use immediate-mode.
+
+        } elsif ( $res->is_not_openid ) {
+
+            return $your_app->error('request is not for openid.');
+
+        } elsif ( $res->is_invalid ) {
+
+            # failed to verify returned assertion
+            $your_app->log( $res->message );
+            $your_app->error('Failed to verify assertion.');
+
+        } elsif ( $res->is_error ) {
+
+            # error response.
+            $your_app->log( $res->message );
+            $your_app->log( $res->contact );
+            $your_app->log( $res->referrence );
+
+            $your_app->error('Got error response from OP');
 
         }
+
     }
 
 =head1 DESCRIPTION
@@ -406,7 +441,6 @@ row API example
         $your_app->save_association( $service, $association );
         $your_app->session->set( 'openid.last_requested_endpoint', $service );
 
-
         my $checkid_request = OpenID::Lite::RelyingParty::CheckID::Request->new(
             service     => $service,
             association => $association,
@@ -481,17 +515,50 @@ row API example
         );
 
         if ( $res->is_success ) {
+
+            # openid login successfully completed.
+            # you should save the verified identifier.
+
             my $claimed_identifier = $res->claimed_identifier;
             my $identity           = $res->identity;
+
         } elsif ( $res->is_canceled ) {
+
+            # user canceled openid-login.
+            #
+            # redirect back to top-page or login-page.
+            return $your_app->redirect('http://yourapp.com/');
 
         } elsif ( $res->is_needed_setup ) {
 
+            # you requested as immediate-mode.
+            # but OP requires setup.
+
+            # so, then redirect to the indicated url
+            return $your_app->redirect( $res->url );
+
+            # if you accept OP with white-list,
+            # You can know whether the OP accepts immedate mode or not.
+            # So, it's better to change not to use immediate-mode.
+
         } elsif ( $res->is_not_openid ) {
+
+            return $your_app->error('request is not for openid.');
 
         } elsif ( $res->is_invalid ) {
 
+            # failed to verify returned assertion
+            $your_app->log( $res->message );
+            $your_app->error('Failed to verify assertion.');
+
         } elsif ( $res->is_error ) {
+
+            # error response.
+            $your_app->log( $res->message );
+            $your_app->log( $res->contact );
+            $your_app->log( $res->referrence );
+
+            $your_app->error('Got error response from OP');
 
         }
 
@@ -505,24 +572,26 @@ simple API example
         my $current_url = q{http://yourapp.com/return_to};
         my $res = $openid_rp->complete( $your_app->request, $current_url );
 
+        # same as row API example above
         if ( $res->is_success ) {
-            my $claimed_identifier = $res->claimed_identifier;
-            my $identity           = $res->identity;
+            ...
         } elsif ( $res->is_canceled ) {
-
+            ...
         } elsif ( $res->is_needed_setup ) {
-
+            ...
         } elsif ( $res->is_not_openid ) {
-
+            ...
         } elsif ( $res->is_invalid ) {
-
+            ...
         } elsif ( $res->is_error ) {
-
+            ...
         }
 
     }
 
 =head2 idres(%args)
+
+Returns OpenID::Lite::RelyingParty::CheckID::Result object.
 
 =over 4
 
@@ -533,6 +602,9 @@ You should encode your request to OpenID::Lite::Message.
 
 =item current_url(required)
 
+URL string that represents the endpoint you indicate
+as return_to on checkid-request.
+
 =item services(optional)
 
 =item association(optional)
@@ -540,6 +612,8 @@ You should encode your request to OpenID::Lite::Message.
 =back
 
 =head2 complete($request, $current_url)
+
+Returns OpenID::Lite::RelyingParty::CheckID::Result object.
 
 =head1 SEE ALSO
 

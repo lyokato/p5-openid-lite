@@ -31,7 +31,7 @@ has '_id_res_handler' => (
 
 has 'session' => (
     is  => 'rw',
-    isa => 'HTTP::Session',
+#    isa => 'HTTP::Session',
 );
 
 has 'store' => (
@@ -252,7 +252,307 @@ OpenID::Lite::RelyingParty - openid client for relying party
 
 =head1 DESCRIPTION
 
-=head1 METHODS
+This module allows you to make OpenID RelyingParty easily.
+This supports OpenID 2.0.
+Most of these interface is borrowd from ruby-openid which is provided by OpenID Enabled.
+
+You only have to execute 'begin' and 'complete'.
+These methods automatically and properly execute each OpenID communication.
+
+But if you want to customize behavior in detail,
+You alco can use rower API of this module, for example,
+'discover', 'associate', 'idres', and so on.
+
+'Lite' means nothing. It's just against namespace confliction.
+
+=head1 PREPARE
+
+You should start with preparing OpenID::Lite::RelyingParty object with defualt set.
+
+    my $openid_rp = OpenID::Lite::RelyingParty->new();
+
+Or set options.
+
+    my $openid_rp = OpenID::Lite::RelyingParty->new(
+        session => $myapp->session, # HTTP::Session object or other object which has same interface.
+        agent   => $agent,
+        store   => OpenID::Lite::RelyingParty::Store::Cache->new,
+    );
+
+=head2 new
+
+=over4
+
+=item agent
+
+If you omit, L<LWP::UserAgent> is set by default.
+
+To keep your application secure, you'd better set agent with more-secure one.
+like L<LWPx::ParanoidAgent> or L<OpenID::Lite::Agent::Paranoid>.
+
+L<OpenID::Lite::Agent::Dump> dump the request and response object for debug.
+
+=item session
+
+To reduce the cost on 'idres', you can set session object.
+This object must behaves as same as L<HTTP:Session> object.
+(Just requires only 'get' and 'set' methods.)
+
+If session is set and discovery is executed by claimed-id,
+On 'idres' process, it need'nt execute re-discovery to verify
+returned information.
+
+See Also
+L<HTTP::Session>
+
+=item store
+
+This if for saving associations which is established between RP and OP.
+If this is undef, OpenID process is carried out as 'stateless mode'.
+In stateless case, check_authentication http request is required
+to verify signature included in checkid-response.
+
+You had better to set this to reduce networking cost.
+If your RP site allows OP with white-list (maybe this is a standard way now),
+Not so much associations are build. So Hash object on memory is enough to store them.
+L<OpenID::Lite::RelyingParty::Store::OnMemory> fits for this case.
+
+But your site accepts all the OpenID Providers,
+More assocations will be established with them.
+Then you may need another solution.
+
+If you omit, L<OpenID::Lite::RelyingParty::Store::OnMemory> is set by default.
+In future OpenID::Lite::RelyingParty::Store::Cache will be pushed into this package.
+
+See Also
+L<OpenID::Lite::RelyingParty::Store::OnMemory>
+
+=back
+
+=head1 BEGIN
+
+You should
+
+1. normalize user suplied identifier
+2. execute discovery with identifier ( if arleady you obtained OP's information, you can omit this phase )
+3. established association with OP ( if stateless mode, this phase is omitted )
+4. make check-id request
+5. redirect user to OP's endpoint as checkid-request.
+
+There are methods corresponding to each phase.
+You can use them or simple 'begin' methods that execute
+most of these process automatically.
+
+simple API example
+
+    sub login {
+        my $your_app = shift;
+        my $identifier = $your_app->req->param('openid_identifier');
+        # $your_app->validate_identifier( $identifier );
+
+        my $checkid_request = $your_app->begin( $identifier );
+
+        my $endpoint_url = $checkid_request->redirect_url(
+            return_to => q{http://myapp.com/return_to},
+            realm     => q{http://myapp.com/},
+        );
+
+        return $your_app->redirect( $endpoint_url );
+    }
+
+simple API and limiting OP and reducing discovery-cost.
+
+    use OpenID::Lite::Constant::Namespace qw(SERVER_2_0);
+
+    sub login {
+        my $your_app = shift;
+
+        my $service = OpenID::Lite::RelyingParty::Discover::Service->new;
+        $service->add_type( SERVER_2_0 );
+        $service->add_uri( q{http://op.com/endpoint} );
+
+        my $checkid_request = $openid_rp->begin_without_discovery( $service );
+
+        my $endpoint_url = $checkid_request->redirect_url(
+            return_to => q{http://myapp.com/return_to},
+            realm     => q{http://myapp.com/},
+        );
+
+        return $your_app->redirect( $endpoint_url );
+    }
+
+row API example
+
+    sub login {
+        my $your_app = shift;
+        my $identifier = $your_app->req->param('openid_identifier');
+        # $your_app->validate_identifier( $identifier );
+
+        $identifier = $openid_rp->normalize_identifier( $identifier )
+            or return $your_app->error( $openid_rp->errstr );
+
+        my $services = $openid_rp->discover( $identifier )
+            or return $your_app->error( $openid_rp->errstr );
+
+        unless ( @$services > 0 ) {
+            return $your_app->error('No proper OpenID Provider found.');
+        }
+
+        my $service = $services->[0];
+
+        my $association = $openid_rp->associate( $services->[0] )
+            or return $your_app->error( $openid_rp->errstr );
+
+        $your_app->save_association( $service, $association );
+        $your_app->session->set( 'openid.last_requested_endpoint', $service );
+
+
+        my $checkid_request = OpenID::Lite::RelyingParty::CheckID::Request->new(
+            service     => $service,
+            association => $association,
+        );
+
+        my $endpoint_url = $checkid_request->redirect_url(
+            return_to => q{http://myapp.com/return_to},
+            realm     => q{http://myapp.com/},
+        );
+
+        return $your_app->redirect( $endpoint_url );
+    }
+
+=head2 normalize_identifier($identifier)
+
+Normalize user suplied identifier,
+and return OpenID::Lite::Identifier object.
+
+    my $normalized_identifier = $openid_rp->normalized_identifier($user_suplied_identifier)
+        or die $openid_rp->errstr;
+
+=head2 discover($normalized_identifier)
+
+Do discovery and return found service informations(Array of OpenID::Lite::RelyingParty::Discover::Service)
+
+    $services = $openid_rp->discover( $normalized_identifier )
+        or die $openid_rp->errstr;
+
+=head2 associate($service)
+
+Establish association with OP.
+Returns <OpenID::Lite::Association> object.
+
+    my $association = $openid_rp->associate( $service )
+        or die $openid_rp->errstr;
+
+=head2 begin($user_suplied_identifier)
+
+Return <OpenID::Lite::relyingParty::CheckID::Request> object.
+
+    my $checkid_req = $openid_rp->begin( $identifier )
+        or die $openid_rp->errstr;
+
+=head2 begin_without_discovery($service)
+
+Return <OpenID::Lite::relyingParty::CheckID::Request> object.
+
+    my $checkid_req = $openid_rp->begin_without_discovery( $service )
+        or die $openid_rp->errstr;
+
+=head1 COMPLETE
+
+When OP redirect back user to the return_to url you
+defined on checkid-request, you should execute 'idres'.
+You can choose row API and simple wrapper here too.
+
+
+row API example
+
+    sub complete {
+        my $your_app = shift;
+
+        my $params = OpenID::Lite::Message->from_request( $your_app->request );
+        my $service = $your_app->session->get('openid.last_requested_endpoint');
+        my $association = $your_app->load_association_for( $service );
+
+        my $res = $openid_rp->idres(
+            service     => $service,
+            association => $association,
+            params      => $params,
+            current_url => q{http://yourapp.com/return_to},
+        );
+
+        if ( $res->is_success ) {
+            my $claimed_identifier = $res->claimed_identifier;
+            my $identity           = $res->identity;
+        } elsif ( $res->is_canceled ) {
+
+        } elsif ( $res->is_needed_setup ) {
+
+        } elsif ( $res->is_not_openid ) {
+
+        } elsif ( $res->is_invalid ) {
+
+        } elsif ( $res->is_error ) {
+
+        }
+
+    }
+
+simple API example
+
+    sub complete {
+        my $your_app = shift;
+
+        my $current_url = q{http://yourapp.com/return_to};
+        my $res = $openid_rp->complete( $your_app->request, $current_url );
+
+        if ( $res->is_success ) {
+            my $claimed_identifier = $res->claimed_identifier;
+            my $identity           = $res->identity;
+        } elsif ( $res->is_canceled ) {
+
+        } elsif ( $res->is_needed_setup ) {
+
+        } elsif ( $res->is_not_openid ) {
+
+        } elsif ( $res->is_invalid ) {
+
+        } elsif ( $res->is_error ) {
+
+        }
+
+    }
+
+=head2 idres(%args)
+
+=over 4
+
+=item params(required)
+
+OpenID::Lite::Message object.
+You should encode your request to OpenID::Lite::Message.
+
+=item current_url(required)
+
+=item services(optional)
+
+=item association(optional)
+
+=back
+
+=head2 complete($request, $current_url)
+
+=head1 SEE ALSO
+
+http://openid.net/specs/openid-authentication-2_0.html
+http://openidenabled.com/
+
+=head2 TODO
+
+=over 4
+
+=item Improve an interoperability with majour services.
+
+=back
 
 =head1 AUTHOR
 

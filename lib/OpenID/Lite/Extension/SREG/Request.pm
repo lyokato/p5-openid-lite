@@ -99,8 +99,8 @@ sub from_provider_response {
     return unless $alias;
     my $data = $message->get_extension_args($alias) || {};
     my $obj = $class->new( ns_url => $ns_url );
-    $obj->parse_extension_args($data);
-    return $obj;
+    my $result = $obj->parse_extension_args($data);
+    return $result ? $obj : undef;
 }
 
 sub parse_extension_args {

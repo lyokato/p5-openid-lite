@@ -201,7 +201,7 @@ __PACKAGE__->meta->make_immutable;
 
 =head1 NAME
 
-OpenID::Lite::RelyingParty - openid client for relying party
+OpenID::Lite::RelyingParty - OpenID RelyingParty support module
 
 =head1 SYNOPSIS
 
@@ -218,12 +218,12 @@ OpenID::Lite::RelyingParty - openid client for relying party
 
         my $sreg = OpenID::Lite::Extension::SREG::Request->new;
         $sreg->request_fields(qw(nickname));
+
         $checkid_request->add_extension($sreg);
 
         my $redirect_url = $checkid_request->redirect_url(
             return_to => q{http://example.com/return_to},
             realm     => q{http://example.com/},
-            immediate => 1,
         );
 
         return $self->redirect_to( $redirect_url );
@@ -298,7 +298,7 @@ But if you want to customize behavior in detail,
 You alco can use rower API of this module, for example,
 'discover', 'associate', 'idres', and so on.
 
-'Lite' means nothing. It's just against namespace confliction.
+'Lite' means nothing. It's to escape namespace confliction.
 
 =head1 PREPARE
 

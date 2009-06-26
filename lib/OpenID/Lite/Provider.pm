@@ -4,11 +4,14 @@ use Any::Moose;
 use OpenID::Lite::Message;
 use OpenID::Lite::Realm;
 use OpenID::Lite::Provider::Discover;
+use OpenID::Lite::Provider::Response;
 use OpenID::Lite::Provider::AssociationBuilder;
 use OpenID::Lite::Provider::Handler::Association;
 use OpenID::Lite::Provider::Handler::CheckAuth;
 use OpenID::Lite::Provider::Handler::CheckID;
 use OpenID::Lite::Constants::ModeType qw(:all);
+use OpenID::Lite::Constants::Namespace qw(:all);
+use OpenID::Lite::Constants::ProviderResponseType qw(:all);
 
 with 'OpenID::Lite::Role::ErrorHandler';
 with 'OpenID::Lite::Role::AgentHandler';
@@ -89,6 +92,12 @@ has '_discoverer' => (
     lazy_build => 1,
 );
 
+has '_assoc_builder' => (
+    is         => 'ro',
+    isa        => 'OpenID::Lite::Provider::AssociationBuilder',
+    lazy_build => 1,
+);
+
 has '_handlers' => (
     is         => 'ro',
     isa        => 'HashRef',
@@ -125,23 +134,17 @@ sub _get_handler_for {
 }
 
 sub _build__handlers {
-    my $self          = shift;
-    my $handlers      = {};
-    my $assoc_builder = OpenID::Lite::Provider::AssociationBuilder->new(
-        server_secret       => $self->server_secret,
-        secret_lifetime     => $self->secret_lifetime,
-        secret_gen_interval => $self->secret_gen_interval,
-        get_server_secret   => $self->get_server_secret,
-    );
+    my $self     = shift;
+    my $handlers = {};
     $handlers->{associate}
         = OpenID::Lite::Provider::Handler::Association->new(
-        assoc_builder => $assoc_builder, );
+        assoc_builder => $self->_assoc_builder, );
 
     $handlers->{checkauth} = OpenID::Lite::Provider::Handler::CheckAuth->new(
-        assoc_builder => $assoc_builder, );
+        assoc_builder => $self->_assoc_builder, );
 
     $handlers->{checkid} = OpenID::Lite::Provider::Handler::CheckID->new(
-        assoc_builder => $assoc_builder,
+        assoc_builder => $self->_assoc_builder,
         setup_url     => $self->setup_url,
         endpoint_url  => $self->endpoint_url,
         get_user      => $self->get_user,
@@ -152,17 +155,44 @@ sub _build__handlers {
     return $handlers;
 }
 
-sub make_rp_login_assertion_with_realm {
-    my ( $self, $rp_realm ) = @_;
+sub _build__assoc_builder {
+    my $self          = shift;
+    my $assoc_builder = OpenID::Lite::Provider::AssociationBuilder->new(
+        server_secret       => $self->server_secret,
+        secret_lifetime     => $self->secret_lifetime,
+        secret_gen_interval => $self->secret_gen_interval,
+        get_server_secret   => $self->get_server_secret,
+    );
+    return $assoc_builder;
+}
+
+sub make_op_initiated_assertion {
+    my ( $self, $rp_realm, $identifier ) = @_;
     my $urls = $self->discover_rp($rp_realm)
         or return;
     return $self->ERROR( sprintf q{url not found for realm, "%s"}, $rp_realm )
         unless @$urls > 0;
-    return $self->make_rp_login_assertion( $urls->[0] );
+    return $self->make_rp_login_assertion( $rp_realm, $urls->[0],
+        $identifier );
 }
 
-sub make_rp_login_assertion {
-    my ( $self, $url ) = @_;
+sub make_op_initiated_assertion_without_discovery {
+    my ( $self, $rp_realm, $url, $identifier ) = @_;
+
+    my $message = OpenID::Lite::Message->new;
+    $message->set( ns         => SIGNON_2_0 );
+    $message->set( realm      => $rp_realm );
+    $message->set( claimed_id => $identifier );
+    $message->set( identity   => $identifier );
+    $message->set( return_to  => $url );
+
+    return OpenID::Lite::Provider::Response->new(
+        type          => POSITIVE_ASSERTION,
+        req_params    => $message,
+        res_params    => $message,
+        assoc_builder => $self->_assoc_builder,
+        endpoint_url  => $self->endpoint_url,
+    )->make_singed_url();
 }
 
 sub discover_rp {
@@ -302,11 +332,16 @@ User Page
 
 =head1 NAME
 
-OpenID::Lite::Provider - OpenID Provider support library
+OpenID::Lite::Provider - OpenID Provider support module
 
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
+
+This moduel allows you to mae OpenID Provider easily.
+This supports OpenID 2.0.
+
+'Lite' means nothing. It's to escape namespace confliction.
 
 =head1 AUTHOR
 

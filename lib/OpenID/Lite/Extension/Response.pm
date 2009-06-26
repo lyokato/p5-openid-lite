@@ -2,9 +2,8 @@ package OpenID::Lite::Extension::Response;
 
 use Any::Moose;
 
-# called from provider-side
 sub extract_response {
-
+    my ( $class, $ext_req, $data ) = @_;
 }
 
 # called from relying-party side

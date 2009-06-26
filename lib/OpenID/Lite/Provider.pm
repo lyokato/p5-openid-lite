@@ -166,13 +166,17 @@ sub _build__assoc_builder {
     return $assoc_builder;
 }
 
+# my $req = $op->make_op_initiated_assertion( $rp_realm, $user_identifier )
+#   or $your_app->error( $op->errstr );
+# $your_app->redirect( $req->make_singed_url() );
+
 sub make_op_initiated_assertion {
     my ( $self, $rp_realm, $identifier ) = @_;
     my $urls = $self->discover_rp($rp_realm)
         or return;
     return $self->ERROR( sprintf q{url not found for realm, "%s"}, $rp_realm )
         unless @$urls > 0;
-    return $self->make_rp_login_assertion( $rp_realm, $urls->[0],
+    return $self->make_op_initiated_assertion_without_discovery( $rp_realm, $urls->[0],
         $identifier );
 }
 
@@ -192,7 +196,7 @@ sub make_op_initiated_assertion_without_discovery {
         res_params    => $message,
         assoc_builder => $self->_assoc_builder,
         endpoint_url  => $self->endpoint_url,
-    )->make_singed_url();
+    );
 }
 
 sub discover_rp {

@@ -5,6 +5,7 @@ use List::MoreUtils qw(any none);
 use Carp ();
 
 extends 'OpenID::Lite::Extension::Request';
+with 'OpenID::Lite::Role::ErrorHandler';
 
 use OpenID::Lite::Extension::SREG qw(SREG_NS_1_0 SREG_NS_1_1 SREG_NS_ALIAS);
 
@@ -25,6 +26,12 @@ has 'policy_url' => (
     isa => 'Str',
 );
 
+has 'ns_url' => (
+    is      => 'rw',
+    isa     => 'Str',
+    default => sub {SREG_NS_1_1},
+);
+
 my @SREG_FIELDS = qw(
     fullname
     nickname
@@ -37,10 +44,9 @@ my @SREG_FIELDS = qw(
     timezone
 );
 
-
 override 'append_to_params' => sub {
     my ( $self, $params ) = @_;
-    $params->register_extension_namespace( SREG_NS_ALIAS, SREG_NS_1_1 );
+    $params->register_extension_namespace( SREG_NS_ALIAS, $self->ns_url );
 
     my $required = $self->_required;
     $params->set_extension( SREG_NS_ALIAS, 'required',
@@ -62,7 +68,7 @@ sub check_field_name {
 sub request_field {
     my ( $self, $field_name, $required ) = @_;
     $self->check_field_name($field_name)
-        or Carp::confess( sprintf q{Invalid field-name for SREG, "%s"},
+        or return $self->ERROR( sprintf q{Invalid field-name for SREG, "%s"},
         $field_name );
     my $required_fields = $self->_required;
     my $optional_fields = $self->_optional;
@@ -81,6 +87,49 @@ sub request_field {
     }
 }
 
+sub from_provider_response {
+    my ( $class, $res ) = @_;
+    my $message = $res->req_params->copy();
+    my $ns_url  = SREG_NS_1_1;
+    my $alias   = $message->get_ns_alias($ns_url);
+    unless ($alias) {
+        $ns_url = SREG_NS_1_0;
+        $alias  = $message->get_ns_alias($ns_url);
+    }
+    return unless $alias;
+    my $data = $message->get_extension_args($alias) || {};
+    my $obj = $class->new( ns_url => $ns_url );
+    $obj->parse_extension_args($data);
+    return $obj;
+}
+
+sub parse_extension_args {
+    my ( $self, $args, $strict ) = @_;
+    if ( $args->{required} ) {
+        my @f = split( /,/, $args->{required} );
+        for my $f (@f) {
+            my $result = $self->request_field( $f, 1 );
+            return if ( $strict && !$result );
+        }
+    }
+    if ( $args->{optional} ) {
+        my @f = split( /,/, $args->{optional} );
+        for my $f (@f) {
+            my $result = $self->request_field( $f, 0 );
+            return if ( $strict && !$result );
+        }
+    }
+    $self->policy_url( $args->{policy_url} ) if $args->{polici_url};
+    return 1;
+}
+
+sub all_requested_fields {
+    my $self = shift;
+    my @fields = ( @{ $self->_required }, @{ $self->_optional } );
+    return \@fields;
+}
+
 no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
+

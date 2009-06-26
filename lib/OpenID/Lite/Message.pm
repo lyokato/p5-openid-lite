@@ -52,6 +52,14 @@ sub get {
     }
 }
 
+sub get_ns_alias {
+    my ( $self, $ns ) = @_;
+    for my $alias ( keys %{ $self->{_extension_namespaces} } ) {
+        return $alias if $ns eq $self->{_extension_namespaces}{$alias};
+    }
+    return;
+}
+
 sub has_key {
     my ( $self, $key ) = @_;
     return exists $self->{_params}{$key};
@@ -75,6 +83,20 @@ sub get_keys {
     my $self = shift;
     my @keys = keys %{ $self->{_params} };
     return \@keys;
+}
+
+sub get_extension_keys {
+    my $self = shift;
+    my $alias = shift;
+    my @keys = keys %{ $self->{_extension_params}{$alias} };
+    return \@keys;
+}
+
+sub get_extension_args {
+    my $self = shift;
+    my $alias = shift;
+    return unless exists $self->{_extension_namespaces}{$alias};
+    return $self->{_extension_namespaces}{$alias};
 }
 
 sub get_extra_keys {

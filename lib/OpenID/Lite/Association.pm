@@ -62,3 +62,36 @@ no Any::Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 
+=head1 NAME
+
+OpenID::Lite::Association - Association class
+
+=head1 SYNOPSIS
+
+    $assoc->handle;
+    $assoc->secret;
+    $assoc->type;
+    $assoc->expires_in;
+    $assoc->issued;
+    $assoc->expires_at;
+    $assoc->is_expires;
+    $assoc->copy;
+
+=head1 DESCRIPTION
+
+This class's object represents association that established between RP and OP.
+You don't need to build association by yourself.
+
+=head1 AUTHOR
+
+Lyo Kato, E<lt>lyo.kato@gmail.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 by Lyo Kato
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.8 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

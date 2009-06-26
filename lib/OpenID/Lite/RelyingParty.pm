@@ -308,15 +308,29 @@ You should start with preparing OpenID::Lite::RelyingParty object with defualt s
 
 Or set options.
 
+    use OpenID::Lite::Constants::AssocType qw(HMAC_SHA256);
+    use OpenID::Lite::Constants::SessionType qw(DH_SHA256);
     my $openid_rp = OpenID::Lite::RelyingParty->new(
-        session => $myapp->session, # HTTP::Session object or other object which has same interface.
-        agent   => $agent,
-        store   => OpenID::Lite::RelyingParty::Store::Cache->new,
+        assoc_type   => HMAC_SHA256,
+        session_type => DH_SHA256,
+        session      => $myapp->session, # HTTP::Session object or other object which has same interface.
+        agent        => $agent,
+        store        => OpenID::Lite::RelyingParty::Store::Cache->new,
     );
 
 =head2 new
 
 =over4
+
+=item assoc_type
+
+HMAC_SHA1 is set by default.
+L<OpenID::Lite::Constants::AssocType>
+
+=item session_type
+
+NO_ENCRYPTION is set by default.
+L<OpenID::Lite::Constants::SessionType>
 
 =item agent
 
@@ -397,7 +411,7 @@ simple API example
 
 simple API and limiting OP and reducing discovery-cost.
 
-    use OpenID::Lite::Constant::Namespace qw(SERVER_2_0);
+    use OpenID::Lite::Constants::Namespace qw(SERVER_2_0);
 
     sub login {
         my $your_app = shift;

@@ -59,7 +59,7 @@ sub from_success_response {
 
 override 'append_to_params' => sub {
     my ( $self, $params ) = @_;
-    $params->register_extension_namespace( $self->ns_alias, $self->ns_uri );
+    $params->register_extension_namespace( $self->ns_alias, $self->ns_url );
     for my $key ( keys %{ $self->data } ) {
         $params->set_extension(
             $self->ns_alias,

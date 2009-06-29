@@ -132,7 +132,8 @@ sub make_signed_url {
     $claimed_id ||= $identity;
     $claimed_id = $identity if $claimed_id eq IDENTIFIER_SELECT;
 
-    my $res_params = OpenID::Lite::Message->new;
+    #my $res_params = OpenID::Lite::Message->new;
+    my $res_params = $self->res_params->copy();
     $res_params->set( ns => $ns ) if $ns;
 
     $res_params->set( mode         => ID_RES );

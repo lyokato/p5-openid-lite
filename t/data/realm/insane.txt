@@ -1,4 +1,3 @@
-http:///
 http://*/
 https://*/
 http://*.com

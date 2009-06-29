@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 74;
+use Test::More tests => 130;
 use OpenID::Lite::Realm;
 use File::Spec;
 
@@ -38,8 +38,8 @@ sub test_sanity {
     for my $u ( @$insane ) {
         my $r = OpenID::Lite::Realm->parse($u);
         ok($r, sprintf q{%s could be parsed.}, $u);
-        ok(!$r->is_sane, sprintf q{%s is insane.}, $u);
-        ok(!OpenID::Lite::Realm->check_sanity($u), sprintf q{%s is insane.}, $u);
+        ok(!$r->is_sane, sprintf q{%s is insane. by is_sane}, $u);
+        ok(!OpenID::Lite::Realm->check_sanity($u), sprintf q{%s is insane. by check_sanity}, $u);
     }
 }
 

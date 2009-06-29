@@ -180,10 +180,11 @@ sub is_sane {
 
     my $tld = $host_parts[-1];
     return 0 if ( none { $tld eq $_ } @TLDs );
+    return 0 if scalar(@host_parts) == 1;
 
     if ( $self->has_wildcard ) {
         if ( length($tld) == 2 && length( $host_parts[-2] ) <= 3 ) {
-            return @host_parts > 2;
+            return @host_parts > 2 ? 1 : 0;
         }
     }
 

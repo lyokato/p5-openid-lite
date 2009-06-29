@@ -39,7 +39,7 @@ sub add_extension {
     # XXX: check service endpoint includes proper Type element for indicated
     #      extension.
     # if ( $self->service->can_handle_extension($extension) ) {
-    $extension->append_params($self->_params);
+    $extension->append_to_params($self->_params);
     # }
 }
 

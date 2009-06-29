@@ -95,8 +95,8 @@ sub get_extension_keys {
 sub get_extension_args {
     my $self = shift;
     my $alias = shift;
-    return unless exists $self->{_extension_namespaces}{$alias};
-    return $self->{_extension_namespaces}{$alias};
+    return unless exists $self->{_extension_params}{$alias};
+    return $self->{_extension_params}{$alias};
 }
 
 sub get_extra_keys {

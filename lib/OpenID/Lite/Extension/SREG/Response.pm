@@ -31,7 +31,7 @@ sub extract_response {
     my $fields   = $req->all_requested_fields();
     my $rejected = {};
     for my $key ( keys %$data ) {
-        next if ( any { $_ eq $key } @$fields );
+        next unless ( any { $_ eq $key } @$fields );
         $rejected->{$key} = $data->{$key};
     }
     return $class->new(

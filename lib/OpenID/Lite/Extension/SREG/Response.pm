@@ -40,6 +40,23 @@ sub extract_response {
     );
 }
 
+sub from_success_response {
+    my ( $class, $res ) = @_;
+    my $message = $res->params->copy();
+    my $ns_url  = SREG_NS_1_1;
+    my $alias   = $message->get_ns_alias($ns_url);
+    unless ($alias) {
+        $ns_url = SREG_NS_1_0;
+        $alias  = $message->get_ns_alias($ns_url);
+    }
+    return unless $alias;
+    my $data = $message->get_extension_args($alias) || {};
+    return $class->new(
+        data   => $data,
+        ns_url => $ns_url
+    );
+}
+
 override 'append_to_params' => sub {
     my ( $self, $params ) = @_;
     $params->register_extension_namespace( $self->ns_alias, $self->ns_uri );

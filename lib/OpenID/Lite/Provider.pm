@@ -176,8 +176,8 @@ sub make_op_initiated_assertion {
         or return;
     return $self->ERROR( sprintf q{url not found for realm, "%s"}, $rp_realm )
         unless @$urls > 0;
-    return $self->make_op_initiated_assertion_without_discovery( $rp_realm, $urls->[0],
-        $identifier );
+    return $self->make_op_initiated_assertion_without_discovery( $rp_realm,
+        $urls->[0], $identifier );
 }
 
 sub make_op_initiated_assertion_without_discovery {
@@ -223,7 +223,7 @@ __PACKAGE__->meta->make_immutable;
 
 =head1 NAME
 
-OpenID::Lite::Provider - OP class
+OpenID::Lite::Provider - OpenID Provider support module
 
 =head1 SYNOPSIS
 
@@ -232,85 +232,117 @@ OpenID Controller
     package YourApp::OpenIDController;
 
     my $op = OpenID::Lite::Provider->new(
-        endpoint_url => q{http://yourapp.com/openid},
-        setup_url    => q{http://yourapp.com/setup},
+        endpoint_url  => q{http://yourapp.com/openid},
+        setup_url     => q{http://yourapp.com/setup},
+        server_secret => q{SECRETKEY},
     );
 
     # server endpoint
     sub openid {
-        my $self = shift;
-        my $result = $op->handle_request( $self->request );
-        if ( $result->is_for_setup ) {
+
+        my $your_app = shift;
+
+        my $result = $op->handle_request( $your_app->request );
+
+        if ( !$result ) {
+
+            # error occured
+            # invalid as openid-request.
+            $your_app->view->content_type('text/plain');
+            $your_app->view->content($op->errstr);
+            return;
+
+        } elsif ( $result->is_for_setup ) {
 
             # save the parameters into session
             # this is just an example, you can take other ways.
             # for example, use query-string parameter.
-            $self->session->set( 'openid.checkid' => $result );
+            $your_app->session->set( 'openid.checkid' => $result );
 
             # required setup and
             # show decision page
 
-            # 1. redirect to action that is for setup
-            $self->redirect_to( $self->uri_to( action => 'setup' ) );
+            # Case 1. redirect to action that is for setup
+            $your_app->redirect_to( $your_app->uri_to( action => 'setup' ) );
             return;
 
-            # 2. or directly show setup page.
-            $self->view->render('decision_page', {
-                realm => $result->find_requesting_realm,
+            # Case 2. or directly show setup page.
+            $your_app->view->render('decision_page', {
+                realm => $result->get_realm(),
             } );
 
         } elsif ( $result->requires_setup ) {
 
-            return $self->redirect_to( $result->make_setup_url() );
+            # RP requested as immediate-mode, but your app (provider)
+            # doesn't accept immediate mode.
+            return $your_app->redirect_to( $result->make_setup_url() );
 
         } elsif ( $result->is_positive_assertion ) {
 
-            # do extension processes if you need.
-            my $sreg_req = OpenID::Lite::Extension::SREG::Request->from_result($result);
-            $sreg_req->request_fields();
-            my $sreg_res = OpenID::Lite::Extension::SREG::Response->new();
+            # successfully done as immediate-mode.
+
+            # execute extension processes here if you need.
+            my $sreg_req = OpenID::Lite::Extension::SREG::Request->from_provider_response($result);
+            my $user_data = $self->session->get('user');
+            my $sreg_data = {
+                nickname => $user_data->nickname,
+                fullname => $user_data->fullname,
+                email    => $user_data->email,
+            };
+            my $sreg_res = OpenID::Lite::Extension::SREG::Response->extract_response($sreg_req, $sreg_data);
             $result->add_extension( $sreg_res );
 
-            # redirect back to RP with signed params.
+            # redirect back to RP with successful signed params.
             return $self->redirect_to( $result->make_signed_url() );
 
         } elsif ( $result->is_for_direct_communication ) {
 
             # direct communication response
+            # This case is for establishing association and checking auth.
             $self->view->content( $result->content );
+            return;
 
         } elsif ( $result->is_checkid_error ) {
 
-            # show error page on checkid
-            $self->log->debug( $result->errstr );
-            $self->view->render('error');
+            return $self->redirect_to( $self->make_error_url() );
 
         }
     }
 
+    # action that shows decision page.
     sub setup {
         my $self = shift;
         my $checkid_result = $self->session->get('openid.checkid');
     }
 
+    # if user canceled to approve RP request.
     sub user_cancel {
         my $self = shift;
         my $checkid_result = $self->session->get('openid.checkid');
         return $self->redirect_to( $checkid_result->make_cancel_url() );
     }
 
+    # if user approved RP request.
     sub user_approved {
         my $self = shift;
-        my $checkid_result = $self->session->get('openid.checkid');
 
+        my $checkid_result = $self->session->get('openid.checkid')
+            or return $self->show_error('Invalid openid-session');
+
+        # RETURN POSITIVE ASSERTION
         # redirect to RP as positive-assertion
-        my $sreg_req = OpenID::Lite::Extension::SREG::Request->extract($checkid_result);
-        $sreg_req->request_fields();
-        my $sreg_res = OpenID::Lite::Extension::SREG::Response->new();
-        $result->add_extension( $sreg_res );
 
+        # execute extension processes here if you need.
+        my $sreg_req = OpenID::Lite::Extension::SREG::Request->from_provider_response($checkid_result);
+        my $user_data = $self->session->get('user');
+        my $sreg_data = {
+            nickname => $user_data->nickname,
+            fullname => $user_data->fullname,
+            email    => $user_data->email,
+        };
+        my $sreg_res = OpenID::Lite::Extension::SREG::Response->extract_response($sreg_req, $sreg_data);
+        $checkid_result->add_extension( $sreg_res );
         return $self->redirect_to( $checkid_result->make_signed_url() );
-
     }
 
     1;
@@ -321,6 +353,10 @@ Application Root
 
     sub root {
         my $self = shift;
+        if ( $self->req->header('Accept') =~ m!application/xrds+xml!i ) {
+            print_xrds();
+            return;
+        }
     }
     1;
 
@@ -330,15 +366,14 @@ User Page
 
     sub user {
         my ( $self, $user_id ) = @_;
+        if ( $self->req->header('Accept') =~ m!application/xrds+xml!i ) {
+            print_claimed_id_xrds($user_id);
+            return;
+        }
     }
 
     1;
 
-=head1 NAME
-
-OpenID::Lite::Provider - OpenID Provider support module
-
-=head1 SYNOPSIS
 
 =head1 DESCRIPTION
 
@@ -346,6 +381,330 @@ This moduel allows you to mae OpenID Provider easily.
 This supports OpenID 2.0.
 
 'Lite' means nothing. It's to escape namespace confliction.
+
+=head1 SETUP
+
+    my $op = OpenID::Lite::Provider->new(
+        endpoint_url => q{http://yourapp.com/openid},
+        setup_url    => q{http://yourapp.com/setup},
+    );
+
+=head2 new
+
+parameters
+
+=over 4
+
+=item setup_url
+
+The OpenID setup url.
+
+=item endpoint_url
+
+The OpenID endpoint url.
+
+=item server_secret
+
+Secret string to generate association.
+
+=item secret_lifetime
+
+Lifetime seconds for each association.
+
+=item agent
+
+Used for RP discovery.
+
+See L<LWP::UserAgent>, L<LWPx::ParanoidAgent>
+L<OpenID::Lite::Agent::Dump>, L<OpenID::Lite::Agent::Paranoid>
+
+=back
+
+Callback functions
+You can set callbacks, then they will be able to automatically
+controll to judge approve request from RP or not.
+If you want to manually handle request,
+see 'REQUEST HANDLING' section.
+
+=over 4
+
+=item get_user
+
+Callback function to get current user object.
+Other callback functions uses the returned user object.
+
+    my $your_app = ...;
+    get_user => sub {
+        return $your_app->session->get('user');
+    }
+
+=item get_identity
+
+Callback function to get user identity.
+If your app provieds users multiple identifier for each realm,
+use the second arg.
+
+    get_identity => sub {
+        my ( $user, $realm ) = @_;
+
+        # if your app provides users with only single identifier
+        return $user->get_identity();
+
+        # if your app provides users with diffirent identifier for each realm.
+        return $user->get_identity_for($realm);
+    }
+
+=item is_identity
+
+Callback function that checks the passed identity is
+for indicated user's one or not.
+If your app provieds users multiple identifier for each realm,
+use the third arg.
+
+    is_identity => sub {
+        my ( $user, $identity, $realm ) = @_;
+        return ( $user->get_identity_for($realm) eq $identity ) ? 1 : 0;
+    }
+
+=item is_trusted
+
+Callback function that checks that if the current user trusts
+requesting RP or not.
+
+    is_trusted => sub {
+        my ( $user, $realm ) = @_;
+        return $user->trust( $realm ) ? 1 : 0;
+    }
+
+=back
+
+=head1 REQUEST HANDLING
+
+execute handle_reuqest method, and
+switch process properly for each result type.
+
+    my $result = $op->handle_request( $your_app->request );
+    if ( !$result ) {
+        # error
+    } elsif ( ... ) {
+
+    } elsif ( ... ) {
+
+    } elsif ( ... ) {
+
+    }
+
+=head2 NOT FOUND RESULT
+
+If $op->handle_request returns nothing.
+You can pick the error string from $op->errstr method.
+
+    if ( !$result ) {
+        $your_app->log( $op->errstr );
+        $your_app->show_error( q{ Invalid openid request.} );
+    }
+
+=head2 POSITIVE ASSERTION
+
+When OP accept the case like that, user had already approved the requesting RP,
+returns positive assertion directly without displaying dicision page.
+To accomplish this, you have to set callback functions(get_user, get_identity, and so on)
+when calling 'new' method.
+
+
+
+    } elsif ( $result->is_positive_assertion ) {
+
+        $your_app->redirect( $result->make_signed_url() );
+    } ...
+
+And if you need support extension.
+Do their process here, or SETUP phase discribed bellow.
+
+    } elsif ( $result->is_positive_assertion ) {
+
+        my $sreg_req = OpenID::Lite::Extension::SREG::Request->from_provider_response( $result );
+        my $user_data = $self->session->get('user');
+        my $sreg_data = {
+            nickname => $user_data->nickname,
+            fullname => $user_data->fullname,
+            email    => $user_data->email,
+        };
+        my $sreg_res = OpenID::Lite::Extension::SREG::Response->extract_response($sreg_req, $sreg_data);
+        $result->add_extension( $sreg_res );
+
+        $your_app->redirect( $result->make_signed_url() );
+    } ...
+
+
+=head2 SETUP
+
+When RP requests checkid not-immediate request,
+and no error found.( for the case if error found, see CHECKID ERROR section ).
+
+Normally, you can choose two ways here,
+Show dicision page directly, or redirect user to setup-url.
+
+And to show some information to users.
+You can pick them from result object.
+see get_relam, get_claimed_id, get_identity methods bellow.
+
+It is better to save result information into session
+until user will be back with setup completion action or canceling action.
+In those actions, result object will be required.
+
+And you can set identifier for user here with
+'set_identity' method of result object.
+
+
+1. Redirecting case.
+
+    } elsif ( $result->is_for_setup ) {
+
+        $your_app->session->save( 'openid' => $result );
+
+        $your_app->redirect( $result->make_setup_url() );
+
+        # or manually make url by yourself.
+        #$your_app->redirect( $your_app->uri_for(
+        #    action => 'setup', 
+        #) );
+    }
+
+
+2. Show dicision page case.
+
+    } elsif ( $result->is_for_setup ) {
+
+        my $realm = $result->get_realm();
+
+        # if you set get_identity callback to Provider object,
+        # you may get identity by this method.
+        my $identity   = $result->get_identity();
+
+        # or set manually here.
+        # my $identity = $your_app->build_user_identity(
+        # $your_app->session->get('user')->id );
+        # $result->set_identity( $identity );
+
+        $your_app->session->save( 'openid' => $result );
+
+        $your_app->show_dicition_page(
+            realm      => $realm,
+            identity   => $identity,
+        );
+    } ...
+
+And as described on POSITIVE ASSERTION phase,
+You can extract information for extension.
+
+    } elsif ( $result->is_for_setup ) {
+
+        my $realm = $result->get_realm();
+
+        # if you set get_identity callback to Provider object,
+        # you may get identity by this method.
+        my $identity   = $result->get_identity();
+
+        # or set manually here.
+        # my $identity = $your_app->build_user_identity(
+        # $your_app->session->get('user')->id );
+        # $result->set_identity( $identity );
+
+        $your_app->session->save( 'openid' => $result );
+
+        my $sreg_req = OpenID::Lite::Extension::SREG::Request->from_provider_response( $result );
+
+        my $fields  = $sreg_req->all_requested_fields();
+        my $message = '';
+        if ( @$fields > 0 ) {
+            $message = sprintf(q{the RP requests your fields, "%s"},
+                join(', ', @$fields) );
+        }
+
+        my $template = 'decision_page.tt';
+
+        my $ui_req = OpenID::Lite::Extension::UI::Request->from_provider_response( $result );
+        if ( $ui_req->mode eq 'popup' ) {
+            $template = 'decision_page_for_popup.tt';
+        }
+
+        $your_app->show_dicition_page(
+            template   => $template,
+            realm      => $realm,
+            identity   => $identity,
+            message    => $message,
+        );
+    } ...
+
+=head2 REQUIRES SETUP
+
+RP send checkid-request but OP doesn't accept immedate mode.
+OP should let RP know setup-url.
+
+    } elsif ( $result->requires_setup ) {
+        $your_app->redirect( $result->make_setup_url() );
+    } ...
+
+=head2 DIRECT COMMUNICATION
+
+For establishing association or CheckAuth request.
+Directly print key-value form encoded content.
+
+    } elsif ( $result->is_direct_communication ) {
+        $your_app->view->content( $result->content );
+    } ...
+
+=head2 CHECKID ERROR
+
+If any error occured while processing checkid-request,
+You should redirect user back to RP with openid-error parameters.
+
+    } elsif ( $result->is_checkid_error ) {
+        $your_app->redirect( $result->make_error_url() );
+    } ...
+
+=head1 OP INITIATE
+
+execute discovery and find return_to url by realm.
+But it works only when RP implements XRDS publishing correctly for realm.
+
+    my $assertion = $op->make_op_initiated_assertion(
+        $rp_realm,
+        $current_user_identifier,
+    ) or $your_app->error( $op->errstr );
+
+Or if you already know the return_to url corresponding to the realm.
+You can make assertion without discovery.
+
+    my $assertion = $op->make_op_initiated_assertion_without_discovery(
+        $rp_realm,
+        $rp_return_to,
+        $current_user_identifier,
+    ) or $your_app->error( $op->errstr );
+
+If you need, add extension here
+
+    my $ext_res = OpenID::Lite::Extension::Something::Response->new;
+    $ext_res->add_some_param( foo => 'bar' );
+    $assertion->add_extension( $ext_res );
+
+And finally, build signed url to redirect with it.
+
+    $your_app->redirect( $assertion->make_signed_url() );
+
+=head1 SEE ALSO
+
+http://openid.net/specs/openid-authentication-2_0.html
+http://openidenabled.com/
+
+=head2 TODO
+
+=over 4
+
+=item Improve an interoperability with majour services.
+
+=back
 
 =head1 AUTHOR
 

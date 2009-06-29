@@ -505,6 +505,25 @@ Return <OpenID::Lite::relyingParty::CheckID::Request> object.
     my $checkid_req = $openid_rp->begin_without_discovery( $service )
         or die $openid_rp->errstr;
 
+=head1 APPEND EXTENSION
+
+You can add extension request onto checkid request.
+
+    my $chekid_req = $openid_rp->begin(...);
+
+    my $sreg_req = OpenID::Lite::Extension::SREG::Request->new;
+    $sreg_req->request_field('nickname');
+    $sreg_req->request_field('fullname');
+    $checkid_req->add_extension( $sreg_req );
+
+    my $ui_req = OpenID::Lite::Extension::UI::Request->new;
+    $ui_req->mode('popup');
+    $checkid_req->add_extension( $ui_req );
+
+    my $url = $checkid_req->redirect_url(
+        ...
+    );
+
 =head1 COMPLETE
 
 When OP redirect back user to the return_to url you
@@ -628,6 +647,20 @@ as return_to on checkid-request.
 =head2 complete($request, $current_url)
 
 Returns OpenID::Lite::RelyingParty::CheckID::Result object.
+
+=head1 EXTRACT EXTENSION RESPONSE
+
+In successfull response,
+You can extract extension data you requested.
+
+    } elsif ( $res->is_success ) {
+
+        my $sreg_res = OpenID::Lite::Extension::SREG::Response->from_success_response($res);
+        my $data = $sreg_res->data;
+        my $nickname = $data->{nickname}||'';
+        my $fullname = $data->{fullname}||'';
+        ...
+    }
 
 =head1 SEE ALSO
 

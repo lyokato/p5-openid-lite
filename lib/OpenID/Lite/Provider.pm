@@ -28,20 +28,20 @@ has 'server_secret' => (
     default => q{secret},
 );
 
-has 'secret_gen_interval' => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => 14 * 24 * 60 * 60,
-);
-
-has 'get_server_secret' => (
-    is      => 'ro',
-    isa     => 'CodeRef',
-    default => sub {
-        sub { return ''; }
-    },
-);
-
+#has 'secret_gen_interval' => (
+#    is      => 'rw',
+#    isa     => 'Int',
+#    default => 14 * 24 * 60 * 60,
+#);
+#
+#has 'get_server_secret' => (
+#    is      => 'ro',
+#    isa     => 'CodeRef',
+#    default => sub {
+#        sub { return ''; }
+#    },
+#);
+#
 has 'setup_url' => (
     is       => 'rw',
     isa      => 'Str',
@@ -160,8 +160,8 @@ sub _build__assoc_builder {
     my $assoc_builder = OpenID::Lite::Provider::AssociationBuilder->new(
         server_secret       => $self->server_secret,
         secret_lifetime     => $self->secret_lifetime,
-        secret_gen_interval => $self->secret_gen_interval,
-        get_server_secret   => $self->get_server_secret,
+#       secret_gen_interval => $self->secret_gen_interval,
+#       get_server_secret   => $self->get_server_secret,
     );
     return $assoc_builder;
 }

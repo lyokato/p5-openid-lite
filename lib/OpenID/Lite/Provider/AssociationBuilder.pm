@@ -7,18 +7,6 @@ use OpenID::Lite::Association;
 use OpenID::Lite::SignatureMethods;
 with 'OpenID::Lite::Role::ErrorHandler';
 
-has 'get_server_secret' => (
-    is      => 'ro',
-    isa     => 'CodeRef',
-    default => sub {
-        sub {
-            my $sec_time = shift;
-            my $secret = '';
-            return $secret;
-        }
-    },
-);
-
 has 'server_secret' => (
     is      => 'ro',
     isa     => 'Str',
@@ -31,11 +19,24 @@ has 'secret_lifetime' => (
     default => 86400,
 );
 
-has 'secret_gen_interval' => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 86400,
-);
+#has 'secret_gen_interval' => (
+#    is      => 'ro',
+#    isa     => 'Int',
+#    default => 86400,
+#);
+#
+#has 'get_server_secret' => (
+#    is      => 'ro',
+#    isa     => 'CodeRef',
+#    default => sub {
+#        sub {
+#            my $sec_time = shift;
+#            my $secret = '';
+#            return $secret;
+#        }
+#    },
+#);
+#
 
 sub build_association {
     my $self     = shift;
@@ -49,9 +50,10 @@ sub build_association {
         or return $self->ERROR( sprintf q{Invalid assoc_type "%s"}, $type );
 
     my $now      = time();
-    my $sec_time = $now - ( $now % $self->secret_gen_interval );
-    my $s_sec    = $self->get_server_secret->($sec_time)
-        || $self->server_secret;
+    #my $sec_time = $now - ( $now % $self->secret_gen_interval );
+    #my $s_sec    = $self->get_server_secret->($sec_time)
+    #    || $self->server_secret;
+    my $s_sec = $self->server_secret;
 
     my $random = String::Random->new;
     my $nonce = $random->randregex( sprintf '[a-zA-Z0-9]{%d}', 20 );
@@ -108,9 +110,10 @@ sub secret_of_handle {
         = OpenID::Lite::SignatureMethods->select_method($type)
         or return $self->ERROR( sprintf q{Invalid assoc_type, "%s"}, $type );
 
-    my $sec_time = $time - ( $time % $self->secret_gen_interval );
-    my $s_sec = $self->get_server_secret->($sec_time)
-        || $self->server_secret;
+    #my $sec_time = $time - ( $time % $self->secret_gen_interval );
+    #my $s_sec = $self->get_server_secret->($sec_time)
+    #    || $self->server_secret;
+    my $s_sec = $self->server_secret;
 
     length($nonce) == ( $dumb ? 25 : 20 )
         or return $self->ERROR(q{Invalid nonce length});

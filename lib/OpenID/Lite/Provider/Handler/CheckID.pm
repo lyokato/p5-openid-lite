@@ -122,6 +122,7 @@ sub handle_request {
             res_params       => $res_params,
             assoc_builder    => $self->assoc_builder,
             endpoint_url     => $self->endpoint_url,
+            setup_url        => $self->setup_url,
         );
     }
 

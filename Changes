@@ -1,6 +1,5 @@
 Revision history for Perl extension OpenID::Lite.
 
-0.01  Tue Feb  3 15:51:38 2009
-	- original version; created by h2xs 1.23 with options
-		-XA OpenID::Lite
+0.01_01  Tue Jun 30 11:52:00 2009
+  developer version released
 

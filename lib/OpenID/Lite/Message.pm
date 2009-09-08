@@ -74,6 +74,7 @@ sub get_extension {
 }
 
 sub get_extra {
+    my ( $self, $key ) = @_;
     return exists $self->{_extra_params}{$key}
         ? $self->{_extra_params}{$key}
         : undef;
@@ -128,8 +129,14 @@ sub set_extension {
 
 sub set_extra {
     my ( $self, $key, $value ) = @_;
-    $self->{_extra_params}{$key} = $value
-        if ( defined $key && defined $value );
+    if ( defined $key && defined $value ) {
+        if (ref $value eq 'ARRAY') {
+            $self->{_extra_params}{$key} = @$value > 1 ? $value : $value->[0];
+        } else {
+            $self->{_extra_params}{$key} = $value
+        }
+    }
+
 }
 
 sub from_key_value {

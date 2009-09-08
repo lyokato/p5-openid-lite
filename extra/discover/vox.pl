@@ -11,7 +11,7 @@ use Perl6::Say;
 use OpenID::Lite::Agent::Dump;
 
 #my $identifier = q{https://www.google.com/accounts/o8/id};
-my $identifier = q{gmail.com};
+my $identifier = q{lyokato.vox.com};
 my $id = OpenID::Lite::Identifier->normalize($identifier);
 my $disco = OpenID::Lite::RelyingParty::Discover->new(
 #agent=>OpenID::Lite::Agent::Dump->new

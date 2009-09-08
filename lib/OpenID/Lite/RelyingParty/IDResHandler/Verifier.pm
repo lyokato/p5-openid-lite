@@ -142,7 +142,7 @@ sub _verify_return_to_args {
             q{Unexpected parameter (not on return_to), [%s = %s]},
             $key, $msg_val )
             if not exists $parsed{$key};
-        if ( $msg_val eq $parsed{$key} ) {
+        if ( $msg_val ne $parsed{$key} ) {
             return $self->ERROR(
                 sprintf
                     q{Parameter [%s]s value [%s] doesn't match return_to's value [%s]},
@@ -254,7 +254,6 @@ sub _discover_and_verify {
         return $self->ERROR( sprintf q{No OpenID information found at %s},
             $claimed_id );
     }
-    use Data::Dump qw(dump);
     return $self->_verify_discovered_services( $claimed_id, $services,
         $to_match_endpoints );
 }

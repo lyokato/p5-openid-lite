@@ -9,20 +9,14 @@ use OpenID::Lite::Constants::SessionType qw(DH_SHA256);
 use Digest::SHA ();
 
 has '+_session_type' => (
-    is      => 'rw',
-    isa     => 'Str',
     default => DH_SHA256,
 );
 
 has '+_allowed_assoc_types' => (
-    is      => 'rw',
-    isa     => 'ArrayRef',
     default => sub { [ HMAC_SHA256 ] },
 );
 
 has '+_secret_length' => (
-    is      => 'ro',
-    isa     => 'Int',
     default => 32,
 );
 

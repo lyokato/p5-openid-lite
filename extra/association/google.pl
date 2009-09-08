@@ -5,6 +5,7 @@ use warnings;
 
 use lib '../../lib';
 
+#use Moose;
 use OpenID::Lite::RelyingParty::Discover::Service;
 use OpenID::Lite::RelyingParty::Discover;
 use OpenID::Lite::Identifier;

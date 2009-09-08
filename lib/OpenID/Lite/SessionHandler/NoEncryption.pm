@@ -9,14 +9,10 @@ use OpenID::Lite::Constants::AssocType qw(HMAC_SHA1 HMAC_SHA256);
 use OpenID::Lite::Constants::SessionType qw(NO_ENCRYPTION);
 
 has '+_session_type' => (
-    is      => 'rw',
-    isa     => 'Str',
     default => NO_ENCRYPTION,
 );
 
 has '+_allowed_assoc_types' => (
-    is      => 'rw',
-    isa     => 'ArrayRef',
     default => sub { [ HMAC_SHA1, HMAC_SHA256 ] },
 );
 

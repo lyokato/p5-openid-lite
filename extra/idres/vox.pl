@@ -35,7 +35,7 @@ sub build_service {
 }
 
 sub build_stateful_message {
-    my $response = q{rp_nonce=2009-09-08T01%3A45%3A12ZM7bFvi&openid1_claimed_id=http%3A%2F%2Flyokato.vox.com%2F&openid.mode=id_res&openid.identity=http://lyokato.vox.com/&openid.return_to=http://example.com/return_to%3Frp_nonce%3D2009-09-08T01%253A45%253A12ZM7bFvi%26openid1_claimed_id%3Dhttp%253A%252F%252Flyokato.vox.com%252F&openid.issued=2009-09-08T01:49:09Z&openid.valid_to=2009-09-08T02:49:09Z&openid.assoc_handle=1252374311:gvhpkSKUhCLlJzSadQop:7dd851c5d3&openid.signed=mode,identity,return_to,issued,valid_to&openid.sig=Mbemk0cX%2BnBM/mwunCv7uad4XTI%3D};
+    my $response = q{rp_nonce=2009-09-16T05%3A45%3A31ZB6ecgA&openid1_claimed_id=http%3A%2F%2Flyokato.vox.com%2F&openid.mode=id_res&openid.identity=http://lyokato.vox.com/&openid.return_to=http://example.com/return_to%3Frp_nonce%3D2009-09-16T05%253A45%253A31ZB6ecgA%26openid1_claimed_id%3Dhttp%253A%252F%252Flyokato.vox.com%252F&openid.issued=2009-09-16T05:45:42Z&openid.valid_to=2009-09-16T06:45:42Z&openid.assoc_handle=1253079931:NtrpKkVQ2BNzWzIDzSZ8:dcdb04cee3&openid.signed=mode,identity,return_to,issued,valid_to&openid.sig=i5Nmyy8AaLTR9X/OSFSc0mraX9U%3D};
 
     use CGI;
     my $query = CGI->new($response);
@@ -56,15 +56,15 @@ sub build_stateful_message {
 
 =pod
 ASSOC_TYPE:   HMAC-SHA1
-ASSOC_HANDLE: 1252374311:gvhpkSKUhCLlJzSadQop:7dd851c5d3
-EXPIRATION:   1253581201
-SECRET:       zhUbdB0wTiiMLkocQJgVVSOdmBo=
+ASSOC_HANDLE: 1253079931:NtrpKkVQ2BNzWzIDzSZ8:dcdb04cee3
+EXPIRATION:   1254286800
+SECRET:       bVXJZnehnJqSpmq6R/Oyyhdp51w=
 =cut
 sub build_association {
-    my $secret = q{zhUbdB0wTiiMLkocQJgVVSOdmBo=};
+my $secret = q{bVXJZnehnJqSpmq6R/Oyyhdp51w=};
     $secret = decode_base64($secret);
     my $assoc = OpenID::Lite::Association->new(
-        handle => q{1252374311:gvhpkSKUhCLlJzSadQop:7dd851c5d3},
+handle => q{1253079931:NtrpKkVQ2BNzWzIDzSZ8:dcdb04cee3},
         secret => $secret,
         type   => q{HMAC-SHA1},
         issued => time(),
@@ -105,6 +105,8 @@ my $res = $idres->idres(
 ok($res->is_success);
 
 say dump($res);
+say $res->display_identifier;
+say $res->identity_url;
 
 
 

@@ -54,8 +54,9 @@ sub idres {
         my $verifier = OpenID::Lite::RelyingParty::IDResHandler::Verifier->new(%args);
         if ( $verifier->verify() ) {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(
-                type   => IS_SUCCESS,
-                params => $params,
+                type    => IS_SUCCESS,
+                params  => $params,
+                service => $verifier->service,
             );
         } else {
             return OpenID::Lite::RelyingParty::CheckID::Result->new(

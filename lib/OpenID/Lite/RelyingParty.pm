@@ -241,8 +241,8 @@ OpenID::Lite::RelyingParty - OpenID RelyingParty support module
             # openid login successfully completed.
             # you should save the verified identifier.
 
-            my $claimed_identifier = $res->claimed_identifier;
-            my $identity           = $res->identity;
+            my $display_identifier = $res->display_identifier;
+            my $identity_url       = $res->identity_url;
 
         } elsif ( $res->is_canceled ) {
 
@@ -432,7 +432,7 @@ simple API and limiting OP and reducing discovery-cost.
         return $your_app->redirect( $endpoint_url );
     }
 
-row API example
+raw API example
 
     sub login {
         my $your_app = shift;
@@ -554,8 +554,8 @@ row API example
             # openid login successfully completed.
             # you should save the verified identifier.
 
-            my $claimed_identifier = $res->claimed_identifier;
-            my $identity           = $res->identity;
+            my $display_identifier = $res->display_identifier;
+            my $identity_url       = $res->identity_url;
 
         } elsif ( $res->is_canceled ) {
 

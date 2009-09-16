@@ -34,6 +34,7 @@ sub parse {
         claimed_identifier => $canonical_id, );
 
     my $services = $builder->build_services($last_xrd);
+    $_->display_identifier($identifier) for @$services;
     return $self->ERROR(q{No service found.}) unless @$services > 0;
     return $services;
 }

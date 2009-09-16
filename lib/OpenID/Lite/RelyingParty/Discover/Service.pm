@@ -3,6 +3,7 @@ package OpenID::Lite::RelyingParty::Discover::Service;
 use Any::Moose;
 use OpenID::Lite::Constants::Namespace
     qw(SERVER_2_0 SPEC_2_0 SPEC_1_0 SIGNON_2_0 SIGNON_1_1 SIGNON_1_0);
+use URI;
 use List::MoreUtils qw(any none);
 
 has 'uris' => (
@@ -35,6 +36,11 @@ has 'type_priority' => (
     default => sub {$#PRIORITY_ORDER}
 );
 
+has '_display_identifier' => (
+    is  => 'rw',
+    isa => 'Str',
+);
+
 sub copy {
     my $self   = shift;
     my $class  = ref($self);
@@ -47,7 +53,24 @@ sub copy {
         if $self->claimed_identifier;
     $copied->op_local_identifier( $self->op_local_identifier )
         if $self->op_local_identifier;
+    $copied->_display_identifier( $self->_display_identifier )
+        if $self->_display_identifier;
     return $copied;
+}
+
+sub display_identifier {
+    my $self = shift;
+    my $dispid = shift;
+    if ($dispid) {
+        $self->_display_identifier($dispid);
+    } else {
+        return $self->_display_identifier if $self->_display_identifier;
+        return unless $self->claimed_identifier;
+        my $parsed_id = URI->new($self->claimed_identifier);
+        return $self->claimed_identifier if not $parsed_id->fragment;
+        $parsed_id->fragment(undef);
+        return $parsed_id->as_string;
+    }
 }
 
 sub find_local_identifier {

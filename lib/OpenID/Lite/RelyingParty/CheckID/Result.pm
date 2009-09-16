@@ -43,6 +43,13 @@ has 'url' => (
 );
 
 # used under successful status
+
+has 'service' => (
+    is => 'rw',
+    isa => 'OpenID::Lite::RelyingParty::Discover::Service',
+);
+
+=pod
 has 'claimed_identifier' => (
     is  => 'ro',
     isa => 'Str',
@@ -52,6 +59,18 @@ has 'identity' => (
     is  => 'ro',
     isa => 'Str',
 );
+=cut
+
+
+sub display_identifier {
+    my $self = shift;
+    return $self->service ? $self->service->display_identifier : undef;
+}
+
+sub identity_url {
+    my $self = shift;
+    return $self->service ? $self->service->claimed_identifier : undef;
+}
 
 sub is_invalid {
     my $self = shift;

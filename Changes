@@ -1,5 +1,9 @@
 Revision history for Perl extension OpenID::Lite.
 
+0.01_02  Web Sep 16 14:54:00 2009
+  fixed checkid-result's accessor - added display_identifier and identity_url
+  bugfix: didn't work with openid1.1 providers.
+
 0.01_01  Tue Jun 30 11:52:00 2009
   developer version released
 

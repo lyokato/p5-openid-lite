@@ -3,6 +3,7 @@ extra/association/google.pl
 extra/association/google_stateless.pl
 extra/association/mixi.pl
 extra/association/myopenid.pl
+extra/association/vox.pl
 extra/association/xri-linksafe.pl
 extra/association/yahoo.pl
 extra/association/yahoo_japan.pl
@@ -12,6 +13,7 @@ extra/discover/mixi_op_endpoint.pl
 extra/discover/myopenid_claimed.pl
 extra/discover/unknown_url.pl
 extra/discover/unknown_xri.pl
+extra/discover/vox.pl
 extra/discover/xri-linksafe.pl
 extra/discover/yahoo_japan_op_endpoint.pl
 extra/discover/yahoo_op_endpoint.pl
@@ -20,6 +22,7 @@ extra/idres/google_hmacsha1_noenc.pl
 extra/idres/google_hmacsha256_dhsha256.pl
 extra/idres/google_stateful.pl
 extra/idres/google_stateless.pl
+extra/idres/vox.pl
 extra/idres/yahoo_japan.pl
 inc/Module/Install.pm
 inc/Module/Install/Base.pm

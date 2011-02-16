@@ -13,6 +13,7 @@ my %CLASS_PAIRS = (
     'Apache2::Request'       => 'OpenID::Lite::Message::Decoder::CGI',
     'Catalyst::Request'      => 'OpenID::Lite::Message::Decoder::CGI',
     'HTTP::Engine::Request'  => 'OpenID::Lite::Message::Decoder::CGI',
+    'Plack::Request'         => 'OpenID::Lite::Message::Decoder::CGI',
     'Apache'                 => 'OpenID::Lite::Message::Decoder::Apache',
     'Mojo::Message::Request' => 'OpenID::Lite::Message::Decoder::Mojo',
 );

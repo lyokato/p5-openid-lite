@@ -251,7 +251,7 @@ OpenID::Lite::RelyingParty - OpenID RelyingParty support module
             # redirect back to top-page or login-page.
             return $your_app->redirect('http://yourapp.com/');
 
-        } elsif ( $res->is_needed_setup ) {
+        } elsif ( $res->is_setup_needed ) {
 
             # you requested as immediate-mode.
             # but OP requires setup.
@@ -564,7 +564,7 @@ row API example
             # redirect back to top-page or login-page.
             return $your_app->redirect('http://yourapp.com/');
 
-        } elsif ( $res->is_needed_setup ) {
+        } elsif ( $res->is_setup_needed ) {
 
             # you requested as immediate-mode.
             # but OP requires setup.
@@ -612,7 +612,7 @@ simple API example
             ...
         } elsif ( $res->is_canceled ) {
             ...
-        } elsif ( $res->is_needed_setup ) {
+        } elsif ( $res->is_setup_needed ) {
             ...
         } elsif ( $res->is_not_openid ) {
             ...

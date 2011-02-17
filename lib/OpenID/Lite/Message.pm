@@ -169,12 +169,13 @@ sub to_post_body {
     my $self = shift;
 
     #$self->set( ns => SIGNON_1_0 ) unless $self->get('ns');
+    my $params = $self->to_hash;
     return join(
         "&",
         map( sprintf( q{%s=%s},
-                sprintf( q{openid.%s}, URI::Escape::uri_escape_utf8($_) ),
-                URI::Escape::uri_escape_utf8( $self->{_params}{$_} ) ),
-            sort keys %{ $self->{_params} } )
+                URI::Escape::uri_escape_utf8($_),
+                URI::Escape::uri_escape_utf8( $params->{$_} ) ),
+            sort keys %{ $params } )
     );
 }
 

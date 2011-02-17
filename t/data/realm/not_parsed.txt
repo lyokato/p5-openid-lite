@@ -15,4 +15,3 @@ http://*:8081/
 http://*:80
 http://localhost:1900foo/
 http://foo.com\/
-http://π.pi.com/

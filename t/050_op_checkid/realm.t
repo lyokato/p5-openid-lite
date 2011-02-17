@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 130;
+use Test::More tests => 129;
 use OpenID::Lite::Realm;
 use File::Spec;
 

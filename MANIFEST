@@ -123,6 +123,7 @@ t/010_core/sig.t
 t/010_core/store.t
 t/010_core/uri.t
 t/010_core/xri.t
+t/010_core/misc.t
 t/020_rp_discovery/html.t
 t/020_rp_discovery/xri_discovery.t
 t/020_rp_discovery/yadis_discovery.t

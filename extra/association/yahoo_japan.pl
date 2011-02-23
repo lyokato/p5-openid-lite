@@ -43,7 +43,7 @@ my $req = OpenID::Lite::RelyingParty::CheckID::Request->new(
 );
 
 my $url = $req->redirect_url(
-    realm     => q{http://example.org},
-    return_to => q{http://example.org/return_to},
+    realm     => q{http://example.com},
+    return_to => q{http://example.com/return_to},
 );
 say $url;

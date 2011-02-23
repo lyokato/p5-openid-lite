@@ -1,6 +1,6 @@
 package OpenID::Lite;
 
-our $VERSION = '0.01_03';
+our $VERSION = '0.01_04';
 
 1;
 __END__

@@ -12,16 +12,16 @@ use Perl6::Say;
 use Digest::SHA1 qw(sha1);
 
 
-my $response = q{openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.mode=id_res&openid.return_to=http%3A%2F%2Fexample.org%2Freturn_to&openid.claimed_id=https%3A%2F%2Fme.yahoo.co.jp%2Fa%2FyE.9G9xtVfQgeBQvoCe8AyFG9sc-%23ba6e4&openid.identity=https%3A%2F%2Fme.yahoo.co.jp%2Fa%2FyE.9G9xtVfQgeBQvoCe8AyFG9sc-&openid.assoc_handle=WNDaDJ9DEasVaGkwYQ2T8qbLTG16aa0gEtZU_JRFYRaL5SWurLFoDkglxr5ZWdVMngGxHHNuERIe9BNi08zTo4iSbzW2pbmE.swubIL141aExp19kPcQyxGpBidX_DTqPA--&openid.realm=http%3A%2F%2Fexample.org&openid.response_nonce=2009-06-04T15%3A43%3A02ZgphPTAo0qa4pi3NwKbA.WlWQtEyLLoV4CA--&openid.signed=assoc_handle%2Cclaimed_id%2Cidentity%2Cmode%2Cns%2Cns.pape%2Cop_endpoint%2Cpape.auth_policies%2Cpape.nist_auth_level%2Cresponse_nonce%2Creturn_to%2Csigned&openid.op_endpoint=https%3A%2F%2Fopen.login.yahooapis.jp%2Fopenid%2Fop%2Fauth&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.auth_policies=none&openid.pape.nist_auth_level=0&openid.sig=wU1uPT0sOSQSOPpHrfO4c1t8eMM%3D};
+my $response = q{openid.ns=http://specs.openid.net/auth/2.0&openid.mode=id_res&openid.return_to=http://lyokato.com/return_to&openid.claimed_id=https://me.yahoo.co.jp/a/yE.9G9xtVfQgeBQvoCe8AyFG9sc-%23ba6e4&openid.identity=https://me.yahoo.co.jp/a/yE.9G9xtVfQgeBQvoCe8AyFG9sc-&openid.assoc_handle=QUmHlxVQQOg79zzdI8rpbEzjuIiNExHiBBh8gaBNcLLiDo21JqaA9pS5vYR.RMKlCqUuWLfI5NryCOJpxkQ6sl0loFU.tLjtpGG6G.x5vH0JT5ttrm8G80.ogieACch6cw--&openid.realm=http://lyokato.com&openid.response_nonce=2011-02-23T07:42:38ZmhXJifN8ABGzs0B5la44aTn25XDavEiVXw--&openid.signed=assoc_handle,claimed_id,identity,mode,ns,op_endpoint,response_nonce,return_to,signed,ns.pape,pape.auth_policies,pape.auth_level.ns.nist,pape.auth_level.nist&openid.op_endpoint=https://open.login.yahooapis.jp/openid/op/auth&openid.ns.pape=http://specs.openid.net/extensions/pape/1.0&openid.pape.auth_policies=http://schemas.openid.net/pape/policies/2007/06/none&openid.pape.auth_level.ns.nist=http://csrc.nist.gov/publications/nistpubs/800-63/SP800-63V1_0_2.pdf&openid.pape.auth_level.nist=0&openid.sig=hMt8/I5rmpTnCRzr5k/qKTnQP4s%3D};
 
 my $message = OpenID::Lite::Message->new;
 for my $pair ( split /&/, $response) {
     my ($k, $v) = split /=/, $pair;
     $k =~ s/^openid\.//;
     $v = URI::Escape::uri_unescape($v);
-    warn '===================';
-    warn $k;
-    warn $v;
+    print '===================', "\n";
+    print $k, "\n";
+    print $v, "\n";
     $message->set($k, $v);
 }
 

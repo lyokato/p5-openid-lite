@@ -1,5 +1,14 @@
 Revision history for Perl extension OpenID::Lite.
 
+0.01_04  Wed Feb 23 16:35:00 2011
+  - bugfix: Util::URI::is_uri doesn't work as expected with URI which has
+    fragment. It is bad on a provider that supports identifier recycling.
+    Thanks to okamuuu
+
+    Fixed extension parameter handling.
+    Thanks to hirose31
+    https://github.com/lyokato/p5-openid-lite/commit/e423d6d371fb5f58b03ec33a7c4ce6e32b3ac6e0
+
 0.01_03  Thu Feb 17 12:35:00 2011
   - fixed POD typo
   - add Plack::Request support to Message::Decoder

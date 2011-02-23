@@ -32,7 +32,8 @@ sub _build_url_regexp {
     my $domainlabel = qq{(?:$alphanum|$alphanum(?:$alphanum|-)*$alphanum)};
     my $hostname = qq{(?:$domainlabel\\.)*$toplabel\\.?};
     my $host = qq{(?:$hostname|$IPv4address)};
-    my $pattern = qq{https?://$host(?::$port)?(?:$abs_path(?:\\?$query)?)?};
+    my $fragment = qq{$uric*};
+    my $pattern = qq{https?://$host(?::$port)?(?:$abs_path(?:\\?$query)?)?(?:#$fragment)?};
     return $pattern;
 }
 
